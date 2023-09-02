@@ -35,7 +35,13 @@ class Lexer:
 
         match self.char:
             case "=":
-                _token = self.new_token(token.ASSIGN, self.char)
+                if self.peek_char() == "=":
+                    char = self.char
+                    self.read_char()
+                    literal = f"{char}{self.char}"
+                    _token = self.new_token(token.EQ, literal)
+                else:
+                    _token = self.new_token(token.ASSIGN, self.char)
             case ";":
                 _token = self.new_token(token.SEMICOLON, self.char)
             case "(":
@@ -46,6 +52,24 @@ class Lexer:
                 _token = self.new_token(token.COMMA, self.char)
             case "+":
                 _token = self.new_token(token.PLUS, self.char)
+            case "-":
+                _token = self.new_token(token.MINUS, self.char)
+            case "!":
+                if self.peek_char() == "=":
+                    char = self.char
+                    self.read_char()
+                    literal = f"{char}{self.char}"
+                    _token = self.new_token(token.NOT_EQ, literal)
+                else:
+                    _token = self.new_token(token.BANG, self.char)
+            case "/":
+                _token = self.new_token(token.SLASH, self.char)
+            case "*":
+                _token = self.new_token(token.ASTERISK, self.char)
+            case "<":
+                _token = self.new_token(token.LT, self.char)
+            case ">":
+                _token = self.new_token(token.GT, self.char)
             case "{":
                 _token = self.new_token(token.LBRACE, self.char)
             case "}":
@@ -83,3 +107,8 @@ class Lexer:
     def skip_whitespace(self) -> None:
         while self.char == " " or self.char == "\t" or self.char == "\n" or self.char == "\r":
             self.read_char()
+
+    def peek_char(self) -> int | str:
+        if self.read_position >= len(self.inp):
+            return 0
+        return self.inp[self.read_position]

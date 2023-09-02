@@ -11,6 +11,17 @@ def test_next_token():
         };
 
         let result = add(five, ten);
+        !-/*5;
+        5 < 10 > 5;
+
+        if (5 < 10) {
+            return true;
+        } else {
+            return false;
+        }
+
+        10 == 10;
+        10 != 9;
     """
 
     expected: list[token.Token] = [
@@ -49,6 +60,43 @@ def test_next_token():
         token.Token(token.COMMA, ","),
         token.Token(token.IDENT, "ten"),
         token.Token(token.RPAREN, ")"),
+        token.Token(token.SEMICOLON, ";"),
+        token.Token(token.BANG, "!"),
+        token.Token(token.MINUS, "-"),
+        token.Token(token.SLASH, "/"),
+        token.Token(token.ASTERISK, "*"),
+        token.Token(token.INT, "5"),
+        token.Token(token.SEMICOLON, ";"),
+        token.Token(token.INT, "5"),
+        token.Token(token.LT, "<"),
+        token.Token(token.INT, "10"),
+        token.Token(token.GT, ">"),
+        token.Token(token.INT, "5"),
+        token.Token(token.SEMICOLON, ";"),
+        token.Token(token.IF, "if"),
+        token.Token(token.LPAREN, "("),
+        token.Token(token.INT, "5"),
+        token.Token(token.LT, "<"),
+        token.Token(token.INT, "10"),
+        token.Token(token.RPAREN, ")"),
+        token.Token(token.LBRACE, "{"),
+        token.Token(token.RETURN, "return"),
+        token.Token(token.TRUE, "true"),
+        token.Token(token.SEMICOLON, ";"),
+        token.Token(token.RBRACE, "}"),
+        token.Token(token.ELSE, "else"),
+        token.Token(token.LBRACE, "{"),
+        token.Token(token.RETURN, "return"),
+        token.Token(token.FALSE, "false"),
+        token.Token(token.SEMICOLON, ";"),
+        token.Token(token.RBRACE, "}"),
+        token.Token(token.INT, "10"),
+        token.Token(token.EQ, "=="),
+        token.Token(token.INT, "10"),
+        token.Token(token.SEMICOLON, ";"),
+        token.Token(token.INT, "10"),
+        token.Token(token.NOT_EQ, "!="),
+        token.Token(token.INT, "9"),
         token.Token(token.SEMICOLON, ";"),
         token.Token(token.EOF, ""),
     ]

@@ -20,6 +20,15 @@ INT = "INT"  # 123456789
 # Operators
 ASSIGN = "="
 PLUS = "+"
+MINUS = "-"
+BANG = "!"
+ASTERISK = "*"
+SLASH = "/"
+
+LT = "<"
+GT = ">"
+EQ = "=="
+NOT_EQ = "!="
 
 # Delimiters
 COMMA = ","
@@ -32,11 +41,24 @@ RBRACE = "}"
 # Keywords
 FUNCTION = "FUNCTION"
 LET = "LET"
+TRUE = "TRUE"
+FALSE = "FALSE"
+IF = "IF"
+ELSE = "ELSE"
+RETURN = "RETURN"
 
 
 def keywords(name: str) -> TokenType | None:
-    _keywords = {"fn": FUNCTION, "let": LET}
-    return _keywords.get(name, None)
+    _keywords = {
+        "fn": FUNCTION,
+        "let": LET,
+        "true": TRUE,
+        "false": FALSE,
+        "if": IF,
+        "else": ELSE,
+        "return": RETURN,
+    }
+    return _keywords.get(name.lower(), None)
 
 
 def lookup_identfier(ident: str) -> TokenType:
