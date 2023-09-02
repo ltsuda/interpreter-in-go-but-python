@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "interpreter-in-go-but-python"
+version = "1.0.0"
+description = "Writing An Interpreter In Go But In Python"
+authors = ["Leonardo Tsuda <3965277+ltsuda@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "interpret_deez"}]
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
