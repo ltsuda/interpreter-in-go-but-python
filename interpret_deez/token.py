@@ -4,7 +4,7 @@ from typing import TypeAlias
 TokenType: TypeAlias = str
 
 
-@dataclass(frozen=True)
+@dataclass
 class Token:
     type: TokenType
     literal: str
@@ -32,3 +32,14 @@ RBRACE = "}"
 # Keywords
 FUNCTION = "FUNCTION"
 LET = "LET"
+
+
+def keywords(name: str) -> TokenType | None:
+    _keywords = {"fn": FUNCTION, "let": LET}
+    return _keywords.get(name, None)
+
+
+def lookup_identfier(ident: str) -> TokenType:
+    if (token_type := keywords(ident)) is not None:
+        return token_type
+    return IDENT
