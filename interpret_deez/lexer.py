@@ -12,21 +12,18 @@ class Lexer:
     inp: str
     position = 0
     read_position = 0
-    char = 0
+    char = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.read_char()
 
     def read_char(self) -> None:
-        if self.read_position >= len(self.inp):
-            self.char = 0
-        else:
-            self.char = self.inp[self.read_position]
+        self.char = self.peek_char()
         self.position = self.read_position
         self.read_position += 1
 
-    def new_token(self, token_type: tokenizer.TokenType, char) -> tokenizer.Token:
-        return tokenizer.Token(type=token_type, literal=str(char))
+    def new_token(self, token_type: tokenizer.TokenType, char: str) -> tokenizer.Token:
+        return tokenizer.Token(type=token_type, literal=char)
 
     def next_token(self) -> tokenizer.Token:
         _token: tokenizer.Token
@@ -38,8 +35,7 @@ class Lexer:
                 if self.peek_char() == "=":
                     char = self.char
                     self.read_char()
-                    literal = f"{char}{self.char}"
-                    _token = self.new_token(tokenizer.EQ, literal)
+                    _token = self.new_token(tokenizer.EQ, f"{char * 2}")
                 else:
                     _token = self.new_token(tokenizer.ASSIGN, self.char)
             case ";":
@@ -58,8 +54,7 @@ class Lexer:
                 if self.peek_char() == "=":
                     char = self.char
                     self.read_char()
-                    literal = f"{char}{self.char}"
-                    _token = self.new_token(tokenizer.NOT_EQ, literal)
+                    _token = self.new_token(tokenizer.NOT_EQ, f"{char}{tokenizer.ASSIGN}")
                 else:
                     _token = self.new_token(tokenizer.BANG, self.char)
             case "/":
@@ -74,7 +69,11 @@ class Lexer:
                 _token = self.new_token(tokenizer.LBRACE, self.char)
             case "}":
                 _token = self.new_token(tokenizer.RBRACE, self.char)
-            case 0:
+            case "[":
+                _token = self.new_token(tokenizer.LBRACKET, self.char)
+            case "]":
+                _token = self.new_token(tokenizer.RBRACKET, self.char)
+            case "\0":
                 _token = self.new_token(tokenizer.EOF, "")
             case _:
                 if self.is_letter(self.char):
@@ -108,7 +107,7 @@ class Lexer:
         while self.char == " " or self.char == "\t" or self.char == "\n" or self.char == "\r":
             self.read_char()
 
-    def peek_char(self) -> int | str:
+    def peek_char(self) -> str:
         if self.read_position >= len(self.inp):
-            return 0
+            return "\0"
         return self.inp[self.read_position]

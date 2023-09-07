@@ -11,7 +11,7 @@ def test_next_token():
         };
 
         let result = add(five, ten);
-        !-/*5;
+        !-/*5[];
         5 < 10 > 5;
 
         if (5 < 10) {
@@ -66,6 +66,8 @@ def test_next_token():
         tokenizer.Token(tokenizer.SLASH, "/"),
         tokenizer.Token(tokenizer.ASTERISK, "*"),
         tokenizer.Token(tokenizer.INT, "5"),
+        tokenizer.Token(tokenizer.LBRACKET, "["),
+        tokenizer.Token(tokenizer.RBRACKET, "]"),
         tokenizer.Token(tokenizer.SEMICOLON, ";"),
         tokenizer.Token(tokenizer.INT, "5"),
         tokenizer.Token(tokenizer.LT, "<"),
