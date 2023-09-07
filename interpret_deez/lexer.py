@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from interpret_deez import token
+from interpret_deez import tokenizer
 
 is_letter_rexp = re.compile("[a-zA-Z_]")
 is_digit_rexp = re.compile("[0-9]")
@@ -25,11 +25,11 @@ class Lexer:
         self.position = self.read_position
         self.read_position += 1
 
-    def new_token(self, token_type: token.TokenType, char) -> token.Token:
-        return token.Token(type=token_type, literal=str(char))
+    def new_token(self, token_type: tokenizer.TokenType, char) -> tokenizer.Token:
+        return tokenizer.Token(type=token_type, literal=str(char))
 
-    def next_token(self) -> token.Token:
-        _token: token.Token
+    def next_token(self) -> tokenizer.Token:
+        _token: tokenizer.Token
 
         self.skip_whitespace()
 
@@ -39,50 +39,50 @@ class Lexer:
                     char = self.char
                     self.read_char()
                     literal = f"{char}{self.char}"
-                    _token = self.new_token(token.EQ, literal)
+                    _token = self.new_token(tokenizer.EQ, literal)
                 else:
-                    _token = self.new_token(token.ASSIGN, self.char)
+                    _token = self.new_token(tokenizer.ASSIGN, self.char)
             case ";":
-                _token = self.new_token(token.SEMICOLON, self.char)
+                _token = self.new_token(tokenizer.SEMICOLON, self.char)
             case "(":
-                _token = self.new_token(token.LPAREN, self.char)
+                _token = self.new_token(tokenizer.LPAREN, self.char)
             case ")":
-                _token = self.new_token(token.RPAREN, self.char)
+                _token = self.new_token(tokenizer.RPAREN, self.char)
             case ",":
-                _token = self.new_token(token.COMMA, self.char)
+                _token = self.new_token(tokenizer.COMMA, self.char)
             case "+":
-                _token = self.new_token(token.PLUS, self.char)
+                _token = self.new_token(tokenizer.PLUS, self.char)
             case "-":
-                _token = self.new_token(token.MINUS, self.char)
+                _token = self.new_token(tokenizer.MINUS, self.char)
             case "!":
                 if self.peek_char() == "=":
                     char = self.char
                     self.read_char()
                     literal = f"{char}{self.char}"
-                    _token = self.new_token(token.NOT_EQ, literal)
+                    _token = self.new_token(tokenizer.NOT_EQ, literal)
                 else:
-                    _token = self.new_token(token.BANG, self.char)
+                    _token = self.new_token(tokenizer.BANG, self.char)
             case "/":
-                _token = self.new_token(token.SLASH, self.char)
+                _token = self.new_token(tokenizer.SLASH, self.char)
             case "*":
-                _token = self.new_token(token.ASTERISK, self.char)
+                _token = self.new_token(tokenizer.ASTERISK, self.char)
             case "<":
-                _token = self.new_token(token.LT, self.char)
+                _token = self.new_token(tokenizer.LT, self.char)
             case ">":
-                _token = self.new_token(token.GT, self.char)
+                _token = self.new_token(tokenizer.GT, self.char)
             case "{":
-                _token = self.new_token(token.LBRACE, self.char)
+                _token = self.new_token(tokenizer.LBRACE, self.char)
             case "}":
-                _token = self.new_token(token.RBRACE, self.char)
+                _token = self.new_token(tokenizer.RBRACE, self.char)
             case 0:
-                _token = self.new_token(token.EOF, "")
+                _token = self.new_token(tokenizer.EOF, "")
             case _:
                 if self.is_letter(self.char):
                     ident = self.read_identifier()
-                    return self.new_token(token.lookup_identfier(ident), ident)
+                    return self.new_token(tokenizer.lookup_identfier(ident), ident)
                 elif self.is_digit(self.char):
-                    return self.new_token(token.INT, self.read_number())
-                _token = self.new_token(token.ILLEGAL, self.char)
+                    return self.new_token(tokenizer.INT, self.read_number())
+                _token = self.new_token(tokenizer.ILLEGAL, self.char)
         self.read_char()
         return _token
 
