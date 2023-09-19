@@ -18,7 +18,7 @@ class Parser:
         self.peek = self.lex.next_token()
 
     def parse_program(self) -> ast.Program:
-        program = ast.Program([])
+        program = ast.Program()
 
         while self.current.type != tokenizer.EOF:
             statement = self.parse_statement()
@@ -27,7 +27,7 @@ class Parser:
             self.next_token()
         return program
 
-    def parse_statement(self) -> ast.Statement | ast.LetStatement | None:
+    def parse_statement(self) -> ast.Statement | None:
         match self.current.type:
             case tokenizer.LET:
                 return self.parse_let_statement()

@@ -20,28 +20,29 @@ def test_let_statement():
     expected = ["x", "y", "foobar"]
 
     for i, tt in enumerate(expected):
-        print(f"{i=}, {tt=}")
         statement = program.statements[i]
         has_passed, error_message = check_let_statement(statement, tt)
         assert has_passed, error_message
 
 
-def check_let_statement(statement: ast.Statement | ast.LetStatement, name: str) -> tuple[bool, str]:
+def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]:
     if statement.token_literal() != "let":
         return False, f"statement.token_literal() not 'let'. got={statement.token_literal()}"
 
-    let_statement = ast.LetStatement(statement.token, statement.name, statement.value)
-    if not isinstance(let_statement, ast.LetStatement):
-        return False, f"statement not 'ast.LetStatement'. got={type(let_statement)}"
+    if not isinstance(statement, ast.LetStatement):
+        return False, f"statement not 'ast.LetStatement'. got={type(statement)}"
 
-    if let_statement.name.value != name:
-        return False, f"let_statement.name.value not '{name}'. got={let_statement.name.value}"
-
-    if let_statement.name.token_literal() != name:
+    if statement.name.value != name:  # type: ignore[reportOptionalMemberAccess]
         return (
             False,
-            f"let_statement.name.token_literal() not '{name}'."
-            f"got={let_statement.name.token_literal()}",
+            f"statement.name.value not '{name}'."
+            f"got={statement.name.value}",  # type: ignore[reportOptionalMemberAccess]
+        )
+    if statement.name.token_literal() != name:  # type: ignore[reportOptionalMemberAccess]
+        return (
+            False,
+            f"statement.name.token_literal() not '{name}'."
+            f"got={statement.name.token_literal()}",  # type: ignore[reportOptionalMemberAccess]
         )
 
     return True, ""
