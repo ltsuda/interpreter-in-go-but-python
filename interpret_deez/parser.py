@@ -33,6 +33,8 @@ class Parser:
         match self.current.type:
             case tokenizer.LET:
                 return self.parse_let_statement()
+            case tokenizer.RETURN:
+                return self.parse_return_statement()
             case _:
                 return None
 
@@ -50,6 +52,15 @@ class Parser:
         while not self.is_current(tokenizer.SEMICOLON):
             self.next_token()
 
+        return statement
+
+    def parse_return_statement(self) -> ast.ReturnStatement | None:
+        statement = ast.ReturnStatement(self.current)
+        self.next_token()
+
+        # TODO: We're skipping the expression until we encounter a semicolon
+        while not self.is_current(tokenizer.SEMICOLON):
+            self.next_token()
         return statement
 
     def is_current(self, token_type: tokenizer.TokenType) -> bool:

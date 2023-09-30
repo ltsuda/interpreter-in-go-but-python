@@ -50,6 +50,14 @@ class LetStatement(Statement):
 
 
 @dataclass
+class ReturnStatement(Statement):
+    return_value: Optional[Expression] = None
+
+    def statement_node(self) -> str:
+        ...
+
+
+@dataclass
 class Program:
     statements: list[Statement] = field(default_factory=list)
 

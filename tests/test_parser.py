@@ -30,6 +30,32 @@ def test_let_statement():
         assert has_passed, error_message
 
 
+def test_return_statements():
+    input = """
+    return 5;
+    return 10;
+    return 123123;
+    """
+
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    assert (
+        len(program.statements) == 3
+    ), f"program.statements does not contain 3 statements. got={len(program.statements)}"
+
+    for statement in program.statements:
+        assert isinstance(
+            statement, ast.ReturnStatement
+        ), f"statement not 'ast.ReturnStatement'. got={type(statement)}"
+        assert (
+            statement.token_literal()
+            != f"return_statement.token_literal() not 'return', got={statement.token_literal()}"
+        )
+
+
 def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]:
     if statement.token_literal() != "let":
         return False, f"statement.token_literal() not 'let'. got={statement.token_literal()}"
