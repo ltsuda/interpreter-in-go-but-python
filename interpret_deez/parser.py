@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from interpret_deez import ast, lexer, tokenizer
 
@@ -6,12 +6,14 @@ from interpret_deez import ast, lexer, tokenizer
 @dataclass
 class Parser:
     lex: lexer.Lexer
+    errors: list = field(default_factory=list)
 
     def __post_init__(self):
         self.current = tokenizer.Token(tokenizer.ILLEGAL, "ILLEGAL")  # avoid type hinting warnings
         self.peek = tokenizer.Token(tokenizer.ILLEGAL, "ILLEGAL")  # avoid type hinting warnings
         self.next_token()
         self.next_token()
+        self.errors = []
 
     def next_token(self) -> None:
         self.current = self.peek
@@ -20,7 +22,7 @@ class Parser:
     def parse_program(self) -> ast.Program:
         program = ast.Program()
 
-        while self.current.type != tokenizer.EOF:
+        while not self.is_current(tokenizer.EOF):
             statement = self.parse_statement()
             if statement:
                 program.statements.append(statement)
@@ -61,4 +63,12 @@ class Parser:
             self.next_token()
             return True
         else:
+            self.peek_errors(token_type)
             return False
+
+    def peek_errors(self, token_type: tokenizer.TokenType) -> None:
+        message = f"expected next token to be '{token_type}', got '{self.peek.type}' instead"
+        self.errors.extend([message])
+
+    def get_errors(self) -> list[str]:
+        return self.errors.copy()

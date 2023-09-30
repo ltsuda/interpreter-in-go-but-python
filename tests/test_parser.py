@@ -1,4 +1,5 @@
 from interpret_deez import ast, lexer, parser
+from pytest_check import check
 
 
 def test_let_statement():
@@ -6,11 +7,15 @@ def test_let_statement():
     let x = 5;
     let y = 10;
     let foobar = 838383;
+    let z 123456
+    let = 11
+    let 654321
     """
 
     lex = lexer.Lexer(input)
     pars = parser.Parser(lex)
     program = pars.parse_program()
+    check_parse_errors(pars)
 
     assert isinstance(program, ast.Program), "parse_program() returned not ast.Program"
     assert (
@@ -46,3 +51,18 @@ def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]
         )
 
     return True, ""
+
+
+def check_parse_errors(pars: parser.Parser) -> None:
+    errors = pars.get_errors()
+    if not errors:
+        return None
+
+    error_title = f"parser has {len(errors)} errors"
+    error_messages = []
+    for _, message in enumerate(errors):
+        error_messages.extend([f"parser error: {message}"])
+    for i, error in enumerate(error_messages):
+        if i == 0:
+            check.equal("parser has 0 errors", error_title)  # type: ignore[reportGeneralTypeIssues]
+        check.equal("no parser error", error)  # type: ignore[reportGeneralTypeIssues]

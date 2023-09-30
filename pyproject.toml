@@ -16,6 +16,7 @@ pytest = "^7.4.0"
 black = "^23.7.0"
 ruff = "^0.0.287"
 pre-commit = "^3.4.0"
+pytest-check = "^2.2.2"
 
 [build-system]
 requires = ["poetry-core"]
