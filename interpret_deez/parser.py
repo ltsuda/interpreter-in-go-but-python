@@ -1,12 +1,27 @@
 from dataclasses import dataclass, field
+from typing import Callable
 
 from interpret_deez import ast, lexer, tokenizer
+
+
+def prefix_parse_function() -> ast.Expression:
+    ...
+
+
+def infix_parse_function(expression: ast.Expression) -> ast.Expression:
+    ...
 
 
 @dataclass
 class Parser:
     lex: lexer.Lexer
     errors: list = field(default_factory=list)
+    prefix_parse_functions: dict[tokenizer.TokenType, Callable[[], ast.Expression]] = field(
+        init=False
+    )
+    infix_parse_functions: dict[
+        tokenizer.TokenType, Callable[[ast.Expression], ast.Expression]
+    ] = field(init=False)
 
     def __post_init__(self):
         self.current = tokenizer.Token(tokenizer.ILLEGAL, "ILLEGAL")  # avoid type hinting warnings
@@ -83,3 +98,11 @@ class Parser:
 
     def get_errors(self) -> list[str]:
         return self.errors.copy()
+
+    def register_prefix(self, token_type: tokenizer.TokenType, fn: Callable[[], ast.Expression]):
+        self.prefix_parse_functions[token_type] = fn
+
+    def register_infix(
+        self, token_type: tokenizer.TokenType, fn: Callable[[ast.Expression], ast.Expression]
+    ):
+        self.infix_parse_functions[token_type] = fn
