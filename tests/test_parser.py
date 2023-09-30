@@ -7,15 +7,11 @@ def test_let_statement():
     let x = 5;
     let y = 10;
     let foobar = 838383;
-    let z 123456
-    let = 11
-    let 654321
     """
 
     lex = lexer.Lexer(input)
     pars = parser.Parser(lex)
     program = pars.parse_program()
-    check_parse_errors(pars)
 
     assert isinstance(program, ast.Program), "parse_program() returned not ast.Program"
     assert (
@@ -28,6 +24,21 @@ def test_let_statement():
         statement = program.statements[i]
         has_passed, error_message = check_let_statement(statement, tt)
         assert has_passed, error_message
+
+
+def test_parse_errors_should_fail():
+    """Test should fail on purpose to show parse errors"""
+
+    input = """
+    let z 123456;
+    let = 11;
+    let 654321;
+    """
+
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    pars.parse_program()
+    check_parse_errors(pars)
 
 
 def test_return_statements():
