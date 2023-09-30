@@ -17,6 +17,15 @@ class Node(ABC):
         """
         return self.token.literal
 
+    @abstractmethod
+    def to_string(self) -> str:
+        """Debugging AST nodes
+
+        Returns:
+            str: AST node as string
+        """
+        ...
+
 
 @dataclass
 class Statement(Node):
@@ -39,6 +48,9 @@ class Identifier(Expression):
     def expression_node(self) -> None:
         ...
 
+    def to_string(self) -> str:
+        return self.value
+
 
 @dataclass
 class LetStatement(Statement):
@@ -48,6 +60,16 @@ class LetStatement(Statement):
     def statement_node(self) -> str:
         ...
 
+    def to_string(self) -> str:
+        out = f"{self.token_literal()} {self.name.to_string() if self.name else ''} ="
+
+        if self.value is not None:
+            out = f"{out} {self.value.to_string()}"
+
+        out = f"{out};"
+
+        return out
+
 
 @dataclass
 class ReturnStatement(Statement):
@@ -55,6 +77,30 @@ class ReturnStatement(Statement):
 
     def statement_node(self) -> str:
         ...
+
+    def to_string(self) -> str:
+        out = f"{self.token_literal()}"
+
+        if self.return_value is not None:
+            out = f"{out} {self.return_value.to_string()}"
+
+        out = f"{out};"
+
+        return out
+
+
+@dataclass
+class ExpressionStatement(Statement):
+    expression: Optional[Expression] = None
+
+    def statement_node(self) -> str:
+        ...
+
+    def to_string(self) -> str:
+        if self.expression is not None:
+            return f"{self.expression.to_string()}"
+
+        return ""
 
 
 @dataclass
@@ -65,3 +111,10 @@ class Program:
         if self.statements:
             return self.statements[0].token_literal()  # type: ignore
         return ""
+
+    def to_string(self) -> str:
+        out: str = ""
+        for statement in self.statements:
+            out = f"{statement.to_string()}"
+
+        return out
