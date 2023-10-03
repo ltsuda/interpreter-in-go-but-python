@@ -67,6 +67,34 @@ def test_return_statements():
         )
 
 
+def test_identifier_expression():
+    input = "foobar;"
+
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    assert (
+        len(program.statements) == 1
+    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    statement = program.statements[0]
+
+    assert isinstance(
+        statement, ast.ExpressionStatement
+    ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+
+    identifier = statement.expression
+    assert isinstance(
+        identifier, ast.Identifier
+    ), f"expression not ast.Identifier. got={identifier}"
+
+    assert identifier.value == "foobar", f"identifier.value not 'foobar'. got={identifier.value}"
+    assert (
+        identifier.token_literal() == "foobar"
+    ), f"identifier.token_literaL() not 'foobar'. got={identifier.token_literal()}"
+
+
 def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]:
     if statement.token_literal() != "let":
         return False, f"statement.token_literal() not 'let'. got={statement.token_literal()}"

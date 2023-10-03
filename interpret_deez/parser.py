@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import enum
 from typing import Callable
 
 from interpret_deez import ast, lexer, tokenizer
@@ -10,6 +11,16 @@ def prefix_parse_function() -> ast.Expression:
 
 def infix_parse_function(expression: ast.Expression) -> ast.Expression:
     ...
+
+
+class Precedences(enum.IntEnum):
+    LOWEST = 1
+    EQUALS = 2  # ==
+    LESS_GREATER = 3  # < OR >
+    SUM = 4  # +
+    PRODUCT = 5  # *
+    PREFIX = 6  # -x OR !x
+    CALL = 7  # my_function(x)
 
 
 @dataclass
@@ -29,6 +40,8 @@ class Parser:
         self.next_token()
         self.next_token()
         self.errors = []
+        self.prefix_parse_functions = {}
+        self.register_prefix(tokenizer.IDENT, self.parse_identifier)
 
     def next_token(self) -> None:
         self.current = self.peek
@@ -51,7 +64,7 @@ class Parser:
             case tokenizer.RETURN:
                 return self.parse_return_statement()
             case _:
-                return None
+                return self.parse_expression_statement()
 
     def parse_let_statement(self) -> ast.LetStatement | None:
         statement = ast.LetStatement(self.current)
@@ -77,6 +90,25 @@ class Parser:
         while not self.is_current(tokenizer.SEMICOLON):
             self.next_token()
         return statement
+
+    def parse_expression_statement(self) -> ast.ExpressionStatement | None:
+        statement = ast.ExpressionStatement(self.current)
+        statement.expression = self.parse_expression(Precedences.LOWEST)
+
+        if self.expected_peek(tokenizer.SEMICOLON):
+            self.next_token()
+
+        return statement
+
+    def parse_expression(self, precedence) -> ast.Expression | None:
+        prefix = self.prefix_parse_functions[self.current.type]
+        if prefix is None:
+            return None
+        left_expression = prefix()
+        return left_expression
+
+    def parse_identifier(self) -> ast.Expression:
+        return ast.Identifier(self.current, self.current.literal)
 
     def is_current(self, token_type: tokenizer.TokenType) -> bool:
         return self.current.type == token_type
