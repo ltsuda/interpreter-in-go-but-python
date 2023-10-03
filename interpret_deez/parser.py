@@ -27,7 +27,7 @@ class Precedences(enum.IntEnum):
 class Parser:
     lex: lexer.Lexer
     errors: list = field(default_factory=list)
-    prefix_parse_functions: dict[tokenizer.TokenType, Callable[[], ast.Expression]] = field(
+    prefix_parse_functions: dict[tokenizer.TokenType, Callable[[], ast.Expression | None]] = field(
         init=False
     )
     infix_parse_functions: dict[
@@ -42,6 +42,7 @@ class Parser:
         self.errors = []
         self.prefix_parse_functions = {}
         self.register_prefix(tokenizer.IDENT, self.parse_identifier)
+        self.register_prefix(tokenizer.INT, self.parse_integer_literal)
 
     def next_token(self) -> None:
         self.current = self.peek
@@ -110,6 +111,19 @@ class Parser:
     def parse_identifier(self) -> ast.Expression:
         return ast.Identifier(self.current, self.current.literal)
 
+    def parse_integer_literal(self) -> ast.Expression | None:
+        integer_literal = ast.IntegerLiteral(self.current)
+
+        try:
+            integer_value = int(self.current.literal)
+        except ValueError:
+            message = f"could not parse {self.current.literal} as int"
+            self.errors.extend(message)
+            return None
+
+        integer_literal.value = integer_value
+        return integer_literal
+
     def is_current(self, token_type: tokenizer.TokenType) -> bool:
         return self.current.type == token_type
 
@@ -131,7 +145,9 @@ class Parser:
     def get_errors(self) -> list[str]:
         return self.errors.copy()
 
-    def register_prefix(self, token_type: tokenizer.TokenType, fn: Callable[[], ast.Expression]):
+    def register_prefix(
+        self, token_type: tokenizer.TokenType, fn: Callable[[], ast.Expression | None]
+    ):
         self.prefix_parse_functions[token_type] = fn
 
     def register_infix(

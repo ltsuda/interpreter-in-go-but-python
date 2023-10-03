@@ -95,6 +95,34 @@ def test_identifier_expression():
     ), f"identifier.token_literaL() not 'foobar'. got={identifier.token_literal()}"
 
 
+def test_integer_literal_expression():
+    input = "100;"
+
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    assert (
+        len(program.statements) == 1
+    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    statement = program.statements[0]
+
+    assert isinstance(
+        statement, ast.ExpressionStatement
+    ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+
+    literal = statement.expression
+    assert isinstance(
+        literal, ast.IntegerLiteral
+    ), f"expression not ast.IntegerLiteral. got={literal}"
+
+    assert literal.value == 100, f"literal.value not 100. got={literal.value}"
+    assert (
+        literal.token_literal() == "100"
+    ), f"literal.token_literaL() not '100'. got={literal.token_literal()}"
+
+
 def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]:
     if statement.token_literal() != "let":
         return False, f"statement.token_literal() not 'let'. got={statement.token_literal()}"
