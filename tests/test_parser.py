@@ -1,3 +1,4 @@
+import pytest
 from interpret_deez import ast, lexer, parser
 from pytest_check import check
 
@@ -26,6 +27,7 @@ def test_let_statement():
         assert has_passed, error_message
 
 
+@pytest.skip("should fail after all parsers are implemented")
 def test_parse_errors_should_fail():
     """Test should fail on purpose to show parse errors"""
 
