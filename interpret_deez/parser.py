@@ -43,6 +43,8 @@ class Parser:
         self.prefix_parse_functions = {}
         self.register_prefix(tokenizer.IDENT, self.parse_identifier)
         self.register_prefix(tokenizer.INT, self.parse_integer_literal)
+        self.register_prefix(tokenizer.BANG, self.parse_prefix_expression)
+        self.register_prefix(tokenizer.MINUS, self.parse_prefix_expression)
 
     def next_token(self) -> None:
         self.current = self.peek
@@ -104,6 +106,7 @@ class Parser:
     def parse_expression(self, precedence) -> ast.Expression | None:
         prefix = self.prefix_parse_functions[self.current.type]
         if prefix is None:
+            self.no_prefix_parse_function_error(self.current.type)
             return None
         left_expression = prefix()
         return left_expression
@@ -123,6 +126,13 @@ class Parser:
 
         integer_literal.value = integer_value
         return integer_literal
+
+    def parse_prefix_expression(self) -> ast.Expression:
+        expression = ast.PrefixExpression(self.current, self.current.literal)
+        self.next_token()
+        expression.right = self.parse_expression(Precedences.PREFIX)
+
+        return expression
 
     def is_current(self, token_type: tokenizer.TokenType) -> bool:
         return self.current.type == token_type
@@ -154,3 +164,7 @@ class Parser:
         self, token_type: tokenizer.TokenType, fn: Callable[[ast.Expression], ast.Expression]
     ):
         self.infix_parse_functions[token_type] = fn
+
+    def no_prefix_parse_function_error(self, token_type: tokenizer.TokenType):
+        message = f"no prefix parse function {token_type} found"
+        self.errors.extend(message)

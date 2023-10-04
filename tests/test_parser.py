@@ -125,6 +125,40 @@ def test_integer_literal_expression():
     ), f"literal.token_literaL() not '100'. got={literal.token_literal()}"
 
 
+def test_prefix_expressions():
+    tests = [
+        {"input": "!5;", "operator": "!", "int_value": 5},
+        {"input": "-15;", "operator": "-", "int_value": 15},
+    ]
+
+    for _, test in enumerate(tests):
+        lex = lexer.Lexer(test["input"])
+        pars = parser.Parser(lex)
+        program = pars.parse_program()
+        check_parse_errors(pars)
+
+        assert (
+            len(program.statements) == 1
+        ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+
+        statement = program.statements[0]
+        assert isinstance(
+            statement, ast.ExpressionStatement
+        ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+
+        prefix_expression = statement.expression
+        assert isinstance(
+            prefix_expression, ast.PrefixExpression
+        ), f"expression not ast.PrefixExpression. got={prefix_expression}"
+
+        assert (
+            prefix_expression.operator == test["operator"]
+        ), f"prefix_expression.operator is not {test['operator']}. got={prefix_expression.operator}"
+
+        passed, message = check_integer_literal(prefix_expression.right, test["int_value"])
+        assert passed, message
+
+
 def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]:
     if statement.token_literal() != "let":
         return False, f"statement.token_literal() not 'let'. got={statement.token_literal()}"
@@ -161,3 +195,16 @@ def check_parse_errors(pars: parser.Parser) -> None:
         if i == 0:
             check.equal("parser has 0 errors", error_title)  # type: ignore[reportGeneralTypeIssues]
         check.equal("no parser error", error)  # type: ignore[reportGeneralTypeIssues]
+
+
+def check_integer_literal(int_literal: ast.Expression, value: int) -> tuple[bool, str]:
+    if not isinstance(int_literal, ast.IntegerLiteral):
+        return False, f"int_literal not ast.IntegerLiteral. got={type(int_literal)}"
+
+    if int_literal.value != value:
+        return False, f"int_literal.value not {value}. got={int_literal.value}"
+
+    if int_literal.token_literal() != str(value):
+        return False, f"int_literal.token_literal() not {value}. got={int_literal.token_literal()}"
+
+    return True, ""

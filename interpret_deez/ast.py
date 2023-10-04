@@ -42,6 +42,18 @@ class Expression(Node):
 
 
 @dataclass
+class PrefixExpression(Expression):
+    operator: str
+    right: Expression | None = None
+
+    def expression_node(self) -> None:
+        ...
+
+    def to_string(self) -> str:
+        return f"({self.operator}{self.right.to_string()})"
+
+
+@dataclass
 class Identifier(Expression):
     value: str
 
