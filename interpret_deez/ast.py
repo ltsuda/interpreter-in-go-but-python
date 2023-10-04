@@ -50,7 +50,7 @@ class PrefixExpression(Expression):
         ...
 
     def to_string(self) -> str:
-        return f"({self.operator}{self.right.to_string() if self.right else None})"
+        return f"({self.operator}{self.right.to_string() if self.right else ''})"
 
 
 @dataclass
@@ -63,9 +63,9 @@ class InfixExpression(Expression):
         ...
 
     def to_string(self) -> str:
-        out = f"{self.left.to_string() if self.left else None}"
+        out = f"{self.left.to_string() if self.left else ''}"
         out = f"{out} {self.operator}"
-        out = f"{out}  {self.right.to_string() if self.right else None}"
+        out = f"({out} {self.right.to_string() if self.right else ''})"
         return out
 
 
@@ -137,7 +137,7 @@ class ExpressionStatement(Statement):
 
     def to_string(self) -> str:
         if self.expression is not None:
-            return f"{self.expression.to_string()}"
+            return self.expression.to_string()
 
         return ""
 
@@ -152,8 +152,4 @@ class Program:
         return ""
 
     def to_string(self) -> str:
-        out: str = ""
-        for statement in self.statements:
-            out = f"{statement.to_string()}"
-
-        return out
+        return "".join(statement.to_string() for statement in self.statements)

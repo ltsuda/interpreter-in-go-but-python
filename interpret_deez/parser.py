@@ -111,7 +111,7 @@ class Parser:
         statement = ast.ExpressionStatement(self.current)
         statement.expression = self.parse_expression(Precedences.LOWEST)
 
-        if self.expected_peek(tokenizer.SEMICOLON):
+        if self.is_peek(tokenizer.SEMICOLON):
             self.next_token()
 
         return statement

@@ -203,6 +203,33 @@ def test_infix_expressions(input, left, operator, right):
     assert passed, message
 
 
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ("-a * b", "((-a) * b)"),
+        ("!-a", "(!(-a))"),
+        ("a + b + c", "((a + b) + c)"),
+        ("a + b - c", "((a + b) - c)"),
+        ("a * b * c", "((a * b) * c)"),
+        ("a * b / c", "((a * b) / c)"),
+        ("a + b / c", "(a + (b / c))"),
+        ("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
+        ("3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"),
+        ("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
+        ("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
+        ("3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"),
+    ],
+)
+def test_operator_precedence(input, expected):
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    program_string = program.to_string()
+    assert program_string == expected, f"expected={expected}, got={program_string}"
+
+
 def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]:
     if statement.token_literal() != "let":
         return False, f"statement.token_literal() not 'let'. got={statement.token_literal()}"
