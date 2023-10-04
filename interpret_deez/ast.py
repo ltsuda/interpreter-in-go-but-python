@@ -50,7 +50,23 @@ class PrefixExpression(Expression):
         ...
 
     def to_string(self) -> str:
-        return f"({self.operator}{self.right.to_string()})"
+        return f"({self.operator}{self.right.to_string() if self.right else None})"
+
+
+@dataclass
+class InfixExpression(Expression):
+    left: Expression | None
+    operator: str
+    right: Expression | None = None
+
+    def expression_node(self) -> None:
+        ...
+
+    def to_string(self) -> str:
+        out = f"{self.left.to_string() if self.left else None}"
+        out = f"{out} {self.operator}"
+        out = f"{out}  {self.right.to_string() if self.right else None}"
+        return out
 
 
 @dataclass

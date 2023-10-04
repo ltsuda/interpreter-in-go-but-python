@@ -5,14 +5,6 @@ from typing import Callable
 from interpret_deez import ast, lexer, tokenizer
 
 
-def prefix_parse_function() -> ast.Expression:
-    ...
-
-
-def infix_parse_function(expression: ast.Expression) -> ast.Expression:
-    ...
-
-
 class Precedences(enum.IntEnum):
     LOWEST = 1
     EQUALS = 2  # ==
@@ -23,6 +15,18 @@ class Precedences(enum.IntEnum):
     CALL = 7  # my_function(x)
 
 
+precedences = {
+    tokenizer.EQ: Precedences.EQUALS,
+    tokenizer.NOT_EQ: Precedences.EQUALS,
+    tokenizer.LT: Precedences.LESS_GREATER,
+    tokenizer.GT: Precedences.LESS_GREATER,
+    tokenizer.PLUS: Precedences.SUM,
+    tokenizer.MINUS: Precedences.SUM,
+    tokenizer.SLASH: Precedences.PRODUCT,
+    tokenizer.ASTERISK: Precedences.PRODUCT,
+}
+
+
 @dataclass
 class Parser:
     lex: lexer.Lexer
@@ -31,7 +35,7 @@ class Parser:
         init=False
     )
     infix_parse_functions: dict[
-        tokenizer.TokenType, Callable[[ast.Expression], ast.Expression]
+        tokenizer.TokenType, Callable[[ast.Expression | None], ast.Expression | None]
     ] = field(init=False)
 
     def __post_init__(self):
@@ -41,10 +45,19 @@ class Parser:
         self.next_token()
         self.errors = []
         self.prefix_parse_functions = {}
+        self.infix_parse_functions = {}
         self.register_prefix(tokenizer.IDENT, self.parse_identifier)
         self.register_prefix(tokenizer.INT, self.parse_integer_literal)
         self.register_prefix(tokenizer.BANG, self.parse_prefix_expression)
         self.register_prefix(tokenizer.MINUS, self.parse_prefix_expression)
+        self.register_infix(tokenizer.EQ, self.parse_infix_expression)
+        self.register_infix(tokenizer.NOT_EQ, self.parse_infix_expression)
+        self.register_infix(tokenizer.LT, self.parse_infix_expression)
+        self.register_infix(tokenizer.GT, self.parse_infix_expression)
+        self.register_infix(tokenizer.PLUS, self.parse_infix_expression)
+        self.register_infix(tokenizer.MINUS, self.parse_infix_expression)
+        self.register_infix(tokenizer.SLASH, self.parse_infix_expression)
+        self.register_infix(tokenizer.ASTERISK, self.parse_infix_expression)
 
     def next_token(self) -> None:
         self.current = self.peek
@@ -103,12 +116,21 @@ class Parser:
 
         return statement
 
-    def parse_expression(self, precedence) -> ast.Expression | None:
+    def parse_expression(self, precedence: int) -> ast.Expression | None:
         prefix = self.prefix_parse_functions[self.current.type]
         if prefix is None:
             self.no_prefix_parse_function_error(self.current.type)
             return None
         left_expression = prefix()
+
+        while not self.is_peek(tokenizer.SEMICOLON) and (precedence < self.peek_precedence()):
+            infix = self.infix_parse_functions[self.peek.type]
+            if infix is None:
+                return left_expression
+
+            self.next_token()
+            left_expression = infix(left_expression)
+
         return left_expression
 
     def parse_identifier(self) -> ast.Expression:
@@ -131,6 +153,14 @@ class Parser:
         expression = ast.PrefixExpression(self.current, self.current.literal)
         self.next_token()
         expression.right = self.parse_expression(Precedences.PREFIX)
+
+        return expression
+
+    def parse_infix_expression(self, left: ast.Expression | None) -> ast.Expression:
+        expression = ast.InfixExpression(self.current, left, self.current.literal)
+        precedence = self.current_precedence()
+        self.next_token()
+        expression.right = self.parse_expression(precedence)
 
         return expression
 
@@ -161,10 +191,26 @@ class Parser:
         self.prefix_parse_functions[token_type] = fn
 
     def register_infix(
-        self, token_type: tokenizer.TokenType, fn: Callable[[ast.Expression], ast.Expression]
+        self,
+        token_type: tokenizer.TokenType,
+        fn: Callable[[ast.Expression | None], ast.Expression | None],
     ):
         self.infix_parse_functions[token_type] = fn
 
     def no_prefix_parse_function_error(self, token_type: tokenizer.TokenType):
         message = f"no prefix parse function {token_type} found"
         self.errors.extend(message)
+
+    def peek_precedence(self) -> int:
+        return (
+            Precedences.LOWEST
+            if not precedences.get(self.peek.type)
+            else precedences[self.peek.type]
+        )
+
+    def current_precedence(self) -> int:
+        return (
+            Precedences.LOWEST
+            if not precedences.get(self.current.type)
+            else precedences[self.current.type]
+        )
