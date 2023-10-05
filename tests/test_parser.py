@@ -3,70 +3,73 @@ from interpret_deez import ast, lexer, parser
 from pytest_check import check
 
 
-def test_let_statement():
-    input = """
-    let x = 5;
-    let y = 10;
-    let foobar = 838383;
-    """
-
+@pytest.mark.parametrize(
+    "input, expected",
+    [
+        ("let x = 5;", "x"),
+        ("let y = 10;", "y"),
+        ("let foobar = 838383;", "foobar"),
+    ],
+)
+def test_let_statement(input, expected):
     lex = lexer.Lexer(input)
     pars = parser.Parser(lex)
     program = pars.parse_program()
+    statements = program.statements
 
     assert isinstance(program, ast.Program), "parse_program() returned not ast.Program"
     assert (
-        len(program.statements) == 3
-    ), f"program.statements does not contain 3 statements. got={len(program.statements)}"
+        len(statements) == 1
+    ), f"program.statements does not contain 1 statement. got={len(statements)}"
 
-    expected = ["x", "y", "foobar"]
-
-    for i, tt in enumerate(expected):
-        statement = program.statements[i]
-        has_passed, error_message = check_let_statement(statement, tt)
-        assert has_passed, error_message
+    statement = program.statements[0]
+    has_passed, error_message = check_let_statement(statement, expected)
+    assert has_passed, error_message
 
 
 @pytest.mark.skip("should fail after all parsers are implemented")
-def test_parse_errors_should_fail():
+@pytest.mark.parametrize(
+    "input",
+    [
+        ("let z 123456;"),
+        ("let = 11;"),
+        ("let 654321;"),
+    ],
+)
+def test_parse_errors_should_fail(input):
     """Test should fail on purpose to show parse errors"""
-
-    input = """
-    let z 123456;
-    let = 11;
-    let 654321;
-    """
-
     lex = lexer.Lexer(input)
     pars = parser.Parser(lex)
     pars.parse_program()
     check_parse_errors(pars)
 
 
-def test_return_statements():
-    input = """
-    return 5;
-    return 10;
-    return 123123;
-    """
-
+@pytest.mark.parametrize(
+    "input",
+    [
+        ("return 5;"),
+        ("return 10;"),
+        ("return 123123;"),
+    ],
+)
+def test_return_statements(input):
     lex = lexer.Lexer(input)
     pars = parser.Parser(lex)
     program = pars.parse_program()
     check_parse_errors(pars)
 
     assert (
-        len(program.statements) == 3
-    ), f"program.statements does not contain 3 statements. got={len(program.statements)}"
+        len(program.statements) == 1
+    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
 
-    for statement in program.statements:
-        assert isinstance(
-            statement, ast.ReturnStatement
-        ), f"statement not 'ast.ReturnStatement'. got={type(statement)}"
-        assert (
-            statement.token_literal()
-            != f"return_statement.token_literal() not 'return', got={statement.token_literal()}"
-        )
+    statement = program.statements[0]
+    assert isinstance(
+        statement, ast.ReturnStatement
+    ), f"statement not 'ast.ReturnStatement'. got={type(statement)}"
+    assert (
+        statement.token_literal()
+        != f"return_statement.token_literal() not 'return', got={statement.token_literal()}"
+    )
 
 
 def test_identifier_expression():
@@ -111,38 +114,39 @@ def test_integer_literal_expression():
     assert passed, message
 
 
-def test_prefix_expressions():
-    tests = [
-        {"input": "!5;", "operator": "!", "int_value": 5},
-        {"input": "-15;", "operator": "-", "int_value": 15},
-    ]
+@pytest.mark.parametrize(
+    "input,operator,int_value",
+    [
+        ("!5;", "!", 5),
+        ("-15;", "-", 15),
+    ],
+)
+def test_prefix_expressions(input, operator, int_value):
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
 
-    for _, test in enumerate(tests):
-        lex = lexer.Lexer(test["input"])
-        pars = parser.Parser(lex)
-        program = pars.parse_program()
-        check_parse_errors(pars)
+    assert (
+        len(program.statements) == 1
+    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
 
-        assert (
-            len(program.statements) == 1
-        ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    statement = program.statements[0]
+    assert isinstance(
+        statement, ast.ExpressionStatement
+    ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
 
-        statement = program.statements[0]
-        assert isinstance(
-            statement, ast.ExpressionStatement
-        ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    prefix_expression = statement.expression
+    assert isinstance(
+        prefix_expression, ast.PrefixExpression
+    ), f"expression not ast.PrefixExpression. got={prefix_expression}"
 
-        prefix_expression = statement.expression
-        assert isinstance(
-            prefix_expression, ast.PrefixExpression
-        ), f"expression not ast.PrefixExpression. got={prefix_expression}"
+    assert (
+        prefix_expression.operator == operator
+    ), f"prefix_expression.operator is not {operator}. got={prefix_expression.operator}"
 
-        assert (
-            prefix_expression.operator == test["operator"]
-        ), f"prefix_expression.operator is not {test['operator']}. got={prefix_expression.operator}"
-
-        passed, message = check_literal_expression(prefix_expression.right, test["int_value"])
-        assert passed, message
+    passed, message = check_literal_expression(prefix_expression.right, int_value)
+    assert passed, message
 
 
 @pytest.mark.parametrize(
