@@ -56,6 +56,7 @@ class Parser:
         self.register_prefix(tokenizer.MINUS, self.parse_prefix_expression)
         self.register_prefix(tokenizer.TRUE, self.parse_boolean)
         self.register_prefix(tokenizer.FALSE, self.parse_boolean)
+        self.register_prefix(tokenizer.LPAREN, self.parse_grouped_expression)
         self.register_infix(tokenizer.EQ, self.parse_infix_expression)
         self.register_infix(tokenizer.NOT_EQ, self.parse_infix_expression)
         self.register_infix(tokenizer.LT, self.parse_infix_expression)
@@ -130,14 +131,14 @@ class Parser:
     def parse_expression(self, precedence: int) -> ast.Expression | None:
         if self.enable_defer:
             defer(self.trace_deez.end_trace, self.trace_deez.begin_trace("parse_expression"))
-        prefix = self.prefix_parse_functions[self.current.type]
+        prefix = self.prefix_parse_functions.get(self.current.type)
         if prefix is None:
             self.no_prefix_parse_function_error(self.current.type)
             return None
         left_expression = prefix()
 
         while not self.is_peek(tokenizer.SEMICOLON) and (precedence < self.peek_precedence()):
-            infix = self.infix_parse_functions[self.peek.type]
+            infix = self.infix_parse_functions.get(self.peek.type)
             if infix is None:
                 return left_expression
 
@@ -151,6 +152,14 @@ class Parser:
 
     def parse_boolean(self) -> ast.Expression:
         return ast.Boolean(self.current, self.is_current(tokenizer.TRUE))
+
+    def parse_grouped_expression(self) -> ast.Expression | None:
+        self.next_token()
+        expression = self.parse_expression(Precedences.LOWEST)
+
+        if not self.expected_peek(tokenizer.RPAREN):
+            return None
+        return expression
 
     def parse_integer_literal(self) -> ast.Expression | None:
         if self.enable_defer:
@@ -221,7 +230,7 @@ class Parser:
 
     def no_prefix_parse_function_error(self, token_type: tokenizer.TokenType):
         message = f"no prefix parse function {token_type} found"
-        self.errors.extend(message)
+        self.errors.append(message)
 
     def peek_precedence(self) -> int:
         return (

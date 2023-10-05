@@ -233,6 +233,11 @@ def test_infix_expressions(input, left, operator, right):
         ("False", "False"),
         ("3 > 5 == False", "((3 > 5) == False)"),
         ("3 < 5 == True", "((3 < 5) == True)"),
+        ("1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"),
+        ("(5 + 5) * 2", "((5 + 5) * 2)"),
+        ("2 / (5 + 5)", "(2 / (5 + 5))"),
+        ("-(5 + 5)", "(-(5 + 5))"),
+        ("!(True == True)", "(!(True == True))"),
     ],
 )
 def test_operator_precedence(input, expected):
