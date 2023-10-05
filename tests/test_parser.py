@@ -86,15 +86,8 @@ def test_identifier_expression():
         statement, ast.ExpressionStatement
     ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
 
-    identifier = statement.expression
-    assert isinstance(
-        identifier, ast.Identifier
-    ), f"expression not ast.Identifier. got={identifier}"
-
-    assert identifier.value == "foobar", f"identifier.value not 'foobar'. got={identifier.value}"
-    assert (
-        identifier.token_literal() == "foobar"
-    ), f"identifier.token_literaL() not 'foobar'. got={identifier.token_literal()}"
+    passed, message = check_literal_expression(statement.expression, "foobar")
+    assert passed, message
 
 
 def test_integer_literal_expression():
@@ -114,15 +107,8 @@ def test_integer_literal_expression():
         statement, ast.ExpressionStatement
     ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
 
-    literal = statement.expression
-    assert isinstance(
-        literal, ast.IntegerLiteral
-    ), f"expression not ast.IntegerLiteral. got={literal}"
-
-    assert literal.value == 100, f"literal.value not 100. got={literal.value}"
-    assert (
-        literal.token_literal() == "100"
-    ), f"literal.token_literaL() not '100'. got={literal.token_literal()}"
+    passed, message = check_literal_expression(statement.expression, 100)
+    assert passed, message
 
 
 def test_prefix_expressions():
@@ -155,7 +141,7 @@ def test_prefix_expressions():
             prefix_expression.operator == test["operator"]
         ), f"prefix_expression.operator is not {test['operator']}. got={prefix_expression.operator}"
 
-        passed, message = check_integer_literal(prefix_expression.right, test["int_value"])
+        passed, message = check_literal_expression(prefix_expression.right, test["int_value"])
         assert passed, message
 
 
@@ -188,18 +174,7 @@ def test_infix_expressions(input, left, operator, right):
     ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
 
     infix_expression = statement.expression
-    assert isinstance(
-        infix_expression, ast.InfixExpression
-    ), f"expression not ast.InfixExpression. got={type(infix_expression)}"
-
-    passed, message = check_integer_literal(infix_expression.left, left)
-    assert passed, message
-
-    assert (
-        infix_expression.operator == operator
-    ), f"infix_expression.operator is not {operator}. got={infix_expression.operator}"
-
-    passed, message = check_integer_literal(infix_expression.right, right)
+    passed, message = check_infix_expression(infix_expression, left, operator, right)
     assert passed, message
 
 
@@ -284,14 +259,62 @@ def check_parse_errors(pars: parser.Parser) -> None:
         check.equal("no parser error", error)  # type: ignore[reportGeneralTypeIssues]
 
 
-def check_integer_literal(int_literal: ast.Expression | None, value: int) -> tuple[bool, str]:
+def check_integer_literal(int_literal: ast.Expression | None, expected: int) -> tuple[bool, str]:
     if not isinstance(int_literal, ast.IntegerLiteral):
         return False, f"int_literal not ast.IntegerLiteral. got={type(int_literal)}"
 
-    if int_literal.value != value:
-        return False, f"int_literal.value not {value}. got={int_literal.value}"
+    if int_literal.value != expected:
+        return False, f"int_literal.value not {expected}. got={int_literal.value}"
 
-    if int_literal.token_literal() != str(value):
-        return False, f"int_literal.token_literal() not {value}. got={int_literal.token_literal()}"
+    if int_literal.token_literal() != str(expected):
+        return (
+            False,
+            f"int_literal.token_literal() not {expected}. got={int_literal.token_literal()}",
+        )
+
+    return True, ""
+
+
+def check_identifier(expression: ast.Expression | None, expected: str) -> tuple[bool, str]:
+    if not isinstance(expression, ast.Identifier):
+        return False, f"expression not ast.Identifier. got={expression}"
+
+    if expression.value != expected:
+        return False, f"identifier.value not {expected}. got={expression.value}"
+
+    if expression.token_literal() != expected:
+        return False, f"identifier.token_literaL() not {expected}. got={expression.token_literal()}"
+
+    return True, ""
+
+
+def check_literal_expression(
+    expression: ast.Expression | None, expected: int | str
+) -> tuple[bool, str]:
+    match expected:
+        case int():
+            return check_integer_literal(expression, int(expected))
+        case str():
+            return check_identifier(expression, str(expected))
+        case _:
+            return False, f"type of expected not handled. got={expected}"
+
+
+def check_infix_expression(
+    expression: ast.Expression | None, left, operator: str, right
+) -> tuple[bool, str]:
+    if not isinstance(expression, ast.InfixExpression):
+        return False, f"expression is not ast.InfixExpression. got={type(expression)}({expression})"
+
+    passed, message = check_literal_expression(expression.left, left)
+    if not passed:
+        return False, message
+
+    if expression.operator != operator:
+        return False, f"expression.operator is not {operator}. got={expression.operator}"
+
+    passed, message = check_literal_expression(expression.right, right)
+    if not passed:
+        return False, message
 
     return True, ""
