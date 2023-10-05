@@ -54,6 +54,8 @@ class Parser:
         self.register_prefix(tokenizer.INT, self.parse_integer_literal)
         self.register_prefix(tokenizer.BANG, self.parse_prefix_expression)
         self.register_prefix(tokenizer.MINUS, self.parse_prefix_expression)
+        self.register_prefix(tokenizer.TRUE, self.parse_boolean)
+        self.register_prefix(tokenizer.FALSE, self.parse_boolean)
         self.register_infix(tokenizer.EQ, self.parse_infix_expression)
         self.register_infix(tokenizer.NOT_EQ, self.parse_infix_expression)
         self.register_infix(tokenizer.LT, self.parse_infix_expression)
@@ -146,6 +148,9 @@ class Parser:
 
     def parse_identifier(self) -> ast.Expression:
         return ast.Identifier(self.current, self.current.literal)
+
+    def parse_boolean(self) -> ast.Expression:
+        return ast.Boolean(self.current, self.is_current(tokenizer.TRUE))
 
     def parse_integer_literal(self) -> ast.Expression | None:
         if self.enable_defer:

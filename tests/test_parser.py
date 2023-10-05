@@ -116,10 +116,38 @@ def test_integer_literal_expression():
 
 
 @pytest.mark.parametrize(
+    "input,expected",
+    [
+        ("False;", False),
+        ("True;", True),
+    ],
+)
+def test_boolean_expression(input, expected):
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    assert (
+        len(program.statements) == 1
+    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    statement = program.statements[0]
+
+    assert isinstance(
+        statement, ast.ExpressionStatement
+    ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+
+    passed, message = check_literal_expression(statement.expression, expected)
+    assert passed, message
+
+
+@pytest.mark.parametrize(
     "input,operator,int_value",
     [
         ("!5;", "!", 5),
         ("-15;", "-", 15),
+        ("!True;", "!", True),
+        ("!False;", "!", False),
     ],
 )
 def test_prefix_expressions(input, operator, int_value):
@@ -161,6 +189,9 @@ def test_prefix_expressions(input, operator, int_value):
         ("5 < 5;", 5, "<", 5),
         ("5 == 5;", 5, "==", 5),
         ("5 != 5;", 5, "!=", 5),
+        ("True == True;", True, "==", True),
+        ("True != False;", True, "!=", False),
+        ("False == False;", False, "==", False),
     ],
 )
 def test_infix_expressions(input, left, operator, right):
@@ -198,6 +229,10 @@ def test_infix_expressions(input, left, operator, right):
         ("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
         ("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
         ("3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"),
+        ("True", "True"),
+        ("False", "False"),
+        ("3 > 5 == False", "((3 > 5) == False)"),
+        ("3 < 5 == True", "((3 < 5) == True)"),
     ],
 )
 def test_operator_precedence(input, expected):
@@ -288,15 +323,30 @@ def check_identifier(expression: ast.Expression | None, expected: str) -> tuple[
         return False, f"identifier.value not {expected}. got={expression.value}"
 
     if expression.token_literal() != expected:
-        return False, f"identifier.token_literaL() not {expected}. got={expression.token_literal()}"
+        return False, f"identifier.token_literal() not {expected}. got={expression.token_literal()}"
+
+    return True, ""
+
+
+def check_boolean(expression: ast.Expression | None, expected: bool) -> tuple[bool, str]:
+    if not isinstance(expression, ast.Boolean):
+        return False, f"expression not ast.Boolean. got={expression}"
+
+    if expression.value is not expected:
+        return False, f"boolean.value not {expected}. got={expression.value}"
+
+    if expression.token_literal() != str(expected):
+        return False, f"boolean.token_literal() not {expected}. got={expression.token_literal()}"
 
     return True, ""
 
 
 def check_literal_expression(
-    expression: ast.Expression | None, expected: int | str
+    expression: ast.Expression | None, expected: int | str | bool
 ) -> tuple[bool, str]:
     match expected:
+        case bool():  # This must be first for bool parse to work. Need to know why.
+            return check_boolean(expression, expected)
         case int():
             return check_integer_literal(expression, int(expected))
         case str():

@@ -92,6 +92,17 @@ class IntegerLiteral(Expression):
 
 
 @dataclass
+class Boolean(Expression):
+    value: bool | None = None
+
+    def expression_node(self) -> None:
+        ...
+
+    def to_string(self) -> str:
+        return self.token.literal
+
+
+@dataclass
 class LetStatement(Statement):
     name: Optional[Identifier] = None
     value: Optional[Expression] = None
