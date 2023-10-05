@@ -230,6 +230,22 @@ def test_operator_precedence(input, expected):
     assert program_string == expected, f"expected={expected}, got={program_string}"
 
 
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        ("-1 * 2 + 3", "(((-1) * 2) + 3)"),
+    ],
+)
+def test_tracer_operator_precedence(input, expected):
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex, enable_defer=True)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    program_string = program.to_string()
+    assert program_string == expected, f"expected={expected}, got={program_string}"
+
+
 def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]:
     if statement.token_literal() != "let":
         return False, f"statement.token_literal() not 'let'. got={statement.token_literal()}"

@@ -3,6 +3,8 @@ import enum
 from typing import Callable
 
 from interpret_deez import ast, lexer, tokenizer
+from interpret_deez.parser_tracing import TraceDeez
+from defer.sugarfree import defer
 
 
 class Precedences(enum.IntEnum):
@@ -37,6 +39,7 @@ class Parser:
     infix_parse_functions: dict[
         tokenizer.TokenType, Callable[[ast.Expression | None], ast.Expression | None]
     ] = field(init=False)
+    enable_defer: bool = field(default=False)
 
     def __post_init__(self):
         self.current = tokenizer.Token(tokenizer.ILLEGAL, "ILLEGAL")  # avoid type hinting warnings
@@ -58,6 +61,7 @@ class Parser:
         self.register_infix(tokenizer.MINUS, self.parse_infix_expression)
         self.register_infix(tokenizer.SLASH, self.parse_infix_expression)
         self.register_infix(tokenizer.ASTERISK, self.parse_infix_expression)
+        self.trace_deez = TraceDeez()
 
     def next_token(self) -> None:
         self.current = self.peek
@@ -108,6 +112,10 @@ class Parser:
         return statement
 
     def parse_expression_statement(self) -> ast.ExpressionStatement | None:
+        if self.enable_defer:
+            defer(
+                self.trace_deez.end_trace, self.trace_deez.begin_trace("parse_expression_statement")
+            )
         statement = ast.ExpressionStatement(self.current)
         statement.expression = self.parse_expression(Precedences.LOWEST)
 
@@ -117,6 +125,8 @@ class Parser:
         return statement
 
     def parse_expression(self, precedence: int) -> ast.Expression | None:
+        if self.enable_defer:
+            defer(self.trace_deez.end_trace, self.trace_deez.begin_trace("parse_expression"))
         prefix = self.prefix_parse_functions[self.current.type]
         if prefix is None:
             self.no_prefix_parse_function_error(self.current.type)
@@ -137,6 +147,8 @@ class Parser:
         return ast.Identifier(self.current, self.current.literal)
 
     def parse_integer_literal(self) -> ast.Expression | None:
+        if self.enable_defer:
+            defer(self.trace_deez.end_trace, self.trace_deez.begin_trace("parse_integer_literal"))
         integer_literal = ast.IntegerLiteral(self.current)
 
         try:
@@ -150,6 +162,8 @@ class Parser:
         return integer_literal
 
     def parse_prefix_expression(self) -> ast.Expression:
+        if self.enable_defer:
+            defer(self.trace_deez.end_trace, self.trace_deez.begin_trace("parse_prefix_expression"))
         expression = ast.PrefixExpression(self.current, self.current.literal)
         self.next_token()
         expression.right = self.parse_expression(Precedences.PREFIX)
@@ -157,6 +171,8 @@ class Parser:
         return expression
 
     def parse_infix_expression(self, left: ast.Expression | None) -> ast.Expression:
+        if self.enable_defer:
+            defer(self.trace_deez.end_trace, self.trace_deez.begin_trace("parse_infix_expression"))
         expression = ast.InfixExpression(self.current, left, self.current.literal)
         precedence = self.current_precedence()
         self.next_token()
