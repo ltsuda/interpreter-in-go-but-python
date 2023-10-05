@@ -1,6 +1,5 @@
-from interpret_deez import ast
+from interpret_deez import ast, tokenizer
 from interpret_deez.ast import Identifier, LetStatement
-from interpret_deez import tokenizer
 
 
 def test_ast_to_string():

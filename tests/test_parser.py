@@ -1,6 +1,7 @@
 import pytest
-from interpret_deez import ast, lexer, parser
 from pytest_check import check
+
+from interpret_deez import ast, lexer, parser
 
 
 @pytest.mark.parametrize(

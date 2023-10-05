@@ -1,10 +1,11 @@
-from dataclasses import dataclass, field
 import enum
+from dataclasses import dataclass, field
 from typing import Callable
+
+from defer.sugarfree import defer
 
 from interpret_deez import ast, lexer, tokenizer
 from interpret_deez.parser_tracing import TraceDeez
-from defer.sugarfree import defer
 
 
 class Precedences(enum.IntEnum):
