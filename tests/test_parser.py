@@ -117,6 +117,75 @@ def test_integer_literal_expression():
     assert passed, message
 
 
+def test_function_literal_expression():
+    input = "fn(x, y) { x + y; }"
+
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    assert (
+        len(program.statements) == 1
+    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    statement = program.statements[0]
+
+    assert isinstance(
+        statement, ast.ExpressionStatement
+    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+
+    fn_expression = statement.expression
+    assert isinstance(
+        fn_expression, ast.FunctionLiteral
+    ), f"fn_expression is not ast.FunctionLiteral. got={type(fn_expression)}"
+
+    assert (
+        len(fn_expression.parameters) == 2
+    ), f"function literal parameters are wrong. want 2, got={len(fn_expression.parameters)}"
+
+    passed, message = check_literal_expression(fn_expression.parameters[0], "x")
+    assert passed, message
+    passed, message = check_literal_expression(fn_expression.parameters[1], "y")
+    assert passed, message
+
+    assert len(fn_expression.body.statements) == 1, (
+        f"fn_expression.body.statements has not 1 statements, "
+        f"got={len(fn_expression.body.statements)}"
+    )
+    body_statement = fn_expression.body.statements[0]
+    assert isinstance(
+        body_statement, ast.ExpressionStatement
+    ), f"function body statement is not ast.ExpressionStatement. got={type(body_statement)}"
+    passed, message = check_infix_expression(body_statement.expression, "x", "+", "y")
+    assert passed, message
+
+
+@pytest.mark.parametrize(
+    "input,expected_params",
+    [
+        (r"fn() {};", []),
+        (r"fn(x) {}", ["x"]),
+        (r"fn(x, y, z) {}", ["x", "y", "z"]),
+    ],
+)
+def test_function_parameters_expression(input, expected_params):
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    statement: ast.ExpressionStatement = program.statements[0]
+    fn: ast.FunctionLiteral = statement.expression
+
+    assert len(fn.parameters) == len(
+        expected_params
+    ), f"length parameters wrong. want {len(expected_params)}, got={len(fn.parameters)}"
+
+    for i, ident in enumerate(expected_params):
+        passed, message = check_literal_expression(fn.parameters[i], ident)
+        assert passed, message
+
+
 @pytest.mark.parametrize(
     "input,expected",
     [
@@ -295,12 +364,12 @@ def test_if_expression():
 
     assert (
         len(expression.consequence.statements) == 1
-    ), f"concequence is not 1 statement. got={len(expression.consequence.statements)}"
+    ), f"consequence is not 1 statement. got={len(expression.consequence.statements)}"
 
     consequence = expression.consequence.statements[0]
     assert isinstance(
         consequence, ast.ExpressionStatement
-    ), f"concequence is not ast.ExpressionStatement. got={type(consequence)}"
+    ), f"consequence is not ast.ExpressionStatement. got={type(consequence)}"
 
     passed, message = check_identifier(consequence.expression, "x")
     assert passed, message

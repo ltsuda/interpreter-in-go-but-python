@@ -58,6 +58,7 @@ class Parser:
         self.register_prefix(tokenizer.FALSE, self.parse_boolean)
         self.register_prefix(tokenizer.LPAREN, self.parse_grouped_expression)
         self.register_prefix(tokenizer.IF, self.parse_if_expression)
+        self.register_prefix(tokenizer.FUNCTION, self.parse_function_literal)
         self.register_infix(tokenizer.EQ, self.parse_infix_expression)
         self.register_infix(tokenizer.NOT_EQ, self.parse_infix_expression)
         self.register_infix(tokenizer.LT, self.parse_infix_expression)
@@ -176,6 +177,41 @@ class Parser:
 
         integer_literal.value = integer_value
         return integer_literal
+
+    def parse_function_literal(self) -> ast.Expression | None:
+        if not self.expected_peek(tokenizer.LPAREN):
+            return None
+
+        fn_literal = ast.FunctionLiteral(self.current, self.parse_function_parameters())
+
+        if not self.expected_peek(tokenizer.LBRACE):
+            return None
+
+        fn_literal.body = self.parse_block_statement()
+
+        return fn_literal
+
+    def parse_function_parameters(self) -> list[ast.Identifier] | None:
+        identifiers: list[ast.Identifier] = []
+
+        if self.is_peek(tokenizer.RPAREN):
+            self.next_token()
+            return identifiers
+
+        self.next_token()
+        ident = ast.Identifier(self.current, self.current.literal)
+        identifiers.append(ident)
+
+        while self.is_peek(tokenizer.COMMA):
+            self.next_token()
+            self.next_token()
+            ident = ast.Identifier(self.current, self.current.literal)
+            identifiers.append(ident)
+
+        if not self.expected_peek(tokenizer.RPAREN):
+            return None
+
+        return identifiers
 
     def parse_prefix_expression(self) -> ast.Expression:
         if self.enable_defer:

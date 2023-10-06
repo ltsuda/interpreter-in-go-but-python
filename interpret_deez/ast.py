@@ -123,6 +123,24 @@ class IntegerLiteral(Expression):
 
 
 @dataclass
+class FunctionLiteral(Expression):
+    parameters: list[Identifier] | None = field(default_factory=list)  # noqa: F811
+    body: Optional[BlockStatement] = None
+
+    def expression_node(self) -> None:
+        ...
+
+    def to_string(self) -> str:
+        params = "".join(parameter.to_string() for parameter in self.parameters)  # type: ignore
+
+        out = (
+            f"{self.token_literal()}({', '.join(params)}) "
+            f"{self.body.to_string() if self.body else ''}"
+        )
+        return out
+
+
+@dataclass
 class Boolean(Expression):
     value: bool | None = None
 
@@ -190,7 +208,7 @@ class Program:
 
     def token_literal(self) -> str:
         if self.statements:
-            return self.statements[0].token_literal()  # type: ignore
+            return self.statements[0].token_literal()
         return ""
 
     def to_string(self) -> str:
