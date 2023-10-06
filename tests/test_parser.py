@@ -7,26 +7,29 @@ from interpret_deez import ast, lexer, parser
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    "input, expected_ident, expected_value",
     [
-        ("let x = 5;", "x"),
-        ("let y = 10;", "y"),
-        ("let foobar = 838383;", "foobar"),
+        ("let x = 5;", "x", 5),
+        ("let y = True;", "y", True),
+        ("let foobar = y;", "foobar", "y"),
     ],
 )
-def test_let_statement(input, expected):
+def test_let_statements(input, expected_ident, expected_value):
     lex = lexer.Lexer(input)
     pars = parser.Parser(lex)
     program = pars.parse_program()
     statements = program.statements
 
-    assert isinstance(program, ast.Program), "parse_program() returned not ast.Program"
     assert (
         len(statements) == 1
     ), f"program.statements does not contain 1 statement. got={len(statements)}"
 
-    statement = program.statements[0]
-    has_passed, error_message = check_let_statement(statement, expected)
+    statement: ast.LetStatement = program.statements[0]
+    has_passed, error_message = check_let_statement(statement, expected_ident)
+    assert has_passed, error_message
+
+    value = statement.value
+    has_passed, error_message = check_literal_expression(value, expected_value)
     assert has_passed, error_message
 
 
@@ -48,14 +51,14 @@ def test_parse_errors_should_fail(input):
 
 
 @pytest.mark.parametrize(
-    "input",
+    "input,expected_value",
     [
-        ("return 5;"),
-        ("return 10;"),
-        ("return 123123;"),
+        ("return 5;", 5),
+        ("return True;", True),
+        ("return foobar;", "foobar"),
     ],
 )
-def test_return_statements(input):
+def test_return_statements(input, expected_value):
     lex = lexer.Lexer(input)
     pars = parser.Parser(lex)
     program = pars.parse_program()
@@ -73,6 +76,8 @@ def test_return_statements(input):
         statement.token_literal()
         != f"return_statement.token_literal() not 'return', got={statement.token_literal()}"
     )
+    has_passed, error_message = check_literal_expression(statement.return_value, expected_value)
+    assert has_passed, error_message
 
 
 def test_identifier_expression():

@@ -104,8 +104,10 @@ class Parser:
         if not self.expected_peek(tokenizer.ASSIGN):
             return None
 
-        # TODO: skip expression until encounter a semicolon
-        while not self.is_current(tokenizer.SEMICOLON):
+        self.next_token()
+        statement.value = self.parse_expression(Precedences.LOWEST)
+
+        if self.is_peek(tokenizer.SEMICOLON):
             self.next_token()
 
         return statement
@@ -114,8 +116,8 @@ class Parser:
         statement = ast.ReturnStatement(self.current)
         self.next_token()
 
-        # TODO: We're skipping the expression until we encounter a semicolon
-        while not self.is_current(tokenizer.SEMICOLON):
+        statement.return_value = self.parse_expression(Precedences.LOWEST)
+        if self.is_peek(tokenizer.SEMICOLON):
             self.next_token()
         return statement
 
