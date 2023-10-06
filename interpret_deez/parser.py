@@ -181,7 +181,7 @@ class Parser:
             integer_value = int(self.current.literal)
         except ValueError:
             message = f"could not parse {self.current.literal} as int"
-            self.errors.extend(message)
+            self.errors.append(message)
             return None
 
         integer_literal.value = integer_value
@@ -317,7 +317,7 @@ class Parser:
 
     def peek_errors(self, token_type: tokenizer.TokenType) -> None:
         message = f"expected next token to be '{token_type}', got '{self.peek.type}' instead"
-        self.errors.extend([message])
+        self.errors.append(message)
 
     def get_errors(self) -> list[str]:
         return self.errors.copy()
