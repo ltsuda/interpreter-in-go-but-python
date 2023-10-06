@@ -27,6 +27,7 @@ precedences = {
     tokenizer.MINUS: Precedences.SUM,
     tokenizer.SLASH: Precedences.PRODUCT,
     tokenizer.ASTERISK: Precedences.PRODUCT,
+    tokenizer.LPAREN: Precedences.CALL,
 }
 
 
@@ -67,6 +68,7 @@ class Parser:
         self.register_infix(tokenizer.MINUS, self.parse_infix_expression)
         self.register_infix(tokenizer.SLASH, self.parse_infix_expression)
         self.register_infix(tokenizer.ASTERISK, self.parse_infix_expression)
+        self.register_infix(tokenizer.LPAREN, self.parse_call_expression)  # type: ignore
         self.trace_deez = TraceDeez()
 
     def next_token(self) -> None:
@@ -163,6 +165,11 @@ class Parser:
             return None
         return expression
 
+    def parse_call_expression(self, function: ast.Expression) -> ast.Expression:
+        expression = ast.CallExpression(self.current, function)
+        expression.arguments = self.parse_call_arguments()
+        return expression
+
     def parse_integer_literal(self) -> ast.Expression | None:
         if self.enable_defer:
             defer(self.trace_deez.end_trace, self.trace_deez.begin_trace("parse_integer_literal"))
@@ -212,6 +219,26 @@ class Parser:
             return None
 
         return identifiers
+
+    def parse_call_arguments(self) -> list[ast.Expression] | None:
+        args: list[ast.Expression] = []
+
+        if self.is_peek(tokenizer.RPAREN):
+            self.next_token()
+            return args
+
+        self.next_token()
+        args.append(self.parse_expression(Precedences.LOWEST))  # type: ignore
+
+        while self.is_peek(tokenizer.COMMA):
+            self.next_token()
+            self.next_token()
+            args.append(self.parse_expression(Precedences.LOWEST))  # type: ignore
+
+        if not self.expected_peek(tokenizer.RPAREN):
+            return None
+
+        return args
 
     def parse_prefix_expression(self) -> ast.Expression:
         if self.enable_defer:

@@ -101,6 +101,23 @@ class IfExpression(Expression):
 
 
 @dataclass
+class CallExpression(Expression):
+    function: Optional[Expression] = None
+    arguments: Optional[list[Expression]] = None
+
+    def expression_node(self) -> None:
+        ...
+
+    def to_string(self) -> str:
+        args = []
+        for arg in self.arguments:  # type: ignore
+            args.append(arg.to_string())
+
+        out = f"{self.function.to_string()}({', '.join(args)})"  # type: ignore
+        return out
+
+
+@dataclass
 class Identifier(Expression):
     value: str
 

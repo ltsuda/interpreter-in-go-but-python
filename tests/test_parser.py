@@ -186,6 +186,43 @@ def test_function_parameters_expression(input, expected_params):
         assert passed, message
 
 
+def test_call_expression():
+    input = "add(1, 2 * 3, 4 + 5);"
+
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    assert (
+        len(program.statements) == 1
+    ), f"program.statements has not enough statements. got={len(program.statements)}"
+
+    statement = program.statements[0]
+    assert isinstance(
+        statement, ast.ExpressionStatement
+    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+
+    expression: ast.CallExpression = statement.expression
+    assert isinstance(
+        expression, ast.CallExpression
+    ), f"expression is not ast.CallExpression. got={type(expression)}"
+
+    passed, message = check_identifier(expression.function, "add")
+    assert passed, message
+
+    assert (
+        len(expression.arguments) == 3
+    ), f"wrong length of arguments. got={len(expression.arguments)}"
+
+    passed, message = check_literal_expression(expression.arguments[0], 1)
+    assert passed, message
+    passed, message = check_infix_expression(expression.arguments[1], 2, "*", 3)
+    assert passed, message
+    passed, message = check_infix_expression(expression.arguments[2], 4, "+", 5)
+    assert passed, message
+
+
 @pytest.mark.parametrize(
     "input,expected",
     [
@@ -309,6 +346,12 @@ def test_infix_expressions(input, left, operator, right):
         ("2 / (5 + 5)", "(2 / (5 + 5))"),
         ("-(5 + 5)", "(-(5 + 5))"),
         ("!(True == True)", "(!(True == True))"),
+        ("a + add(b * c) + d", "((a + add((b * c))) + d)"),
+        (
+            "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+            "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
+        ),
+        ("add(a + b + c * d / e + f)", "add((((a + b) + ((c * d) / e)) + f))"),
     ],
 )
 def test_operator_precedence(input, expected):
