@@ -70,6 +70,37 @@ class InfixExpression(Expression):
 
 
 @dataclass
+class BlockStatement(Statement):
+    statements: list[Statement] = field(default_factory=list)
+
+    def statement_node(self) -> None:
+        ...
+
+    def to_string(self) -> str:
+        return "".join(statement.to_string() for statement in self.statements)
+
+
+@dataclass
+class IfExpression(Expression):
+    condition: Optional[Expression] = None
+    consequence: Optional[BlockStatement] = None
+    alternative: Optional[BlockStatement] = None
+
+    def expression_node(self) -> None:
+        ...
+
+    def to_string(self) -> str:
+        out = "if"
+        out = f"{out}{self.condition.to_string() if self.condition else ''} "
+        out = f"{out}{self.consequence.to_string() if self.consequence else ''}"
+
+        if self.alternative is not None:
+            out = f"{out}else "
+            out = f"{out}{self.alternative.to_string() if self.alternative else ''}"
+        return out
+
+
+@dataclass
 class Identifier(Expression):
     value: str
 

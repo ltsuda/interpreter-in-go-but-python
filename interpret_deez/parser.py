@@ -57,6 +57,7 @@ class Parser:
         self.register_prefix(tokenizer.TRUE, self.parse_boolean)
         self.register_prefix(tokenizer.FALSE, self.parse_boolean)
         self.register_prefix(tokenizer.LPAREN, self.parse_grouped_expression)
+        self.register_prefix(tokenizer.IF, self.parse_if_expression)
         self.register_infix(tokenizer.EQ, self.parse_infix_expression)
         self.register_infix(tokenizer.NOT_EQ, self.parse_infix_expression)
         self.register_infix(tokenizer.LT, self.parse_infix_expression)
@@ -194,6 +195,46 @@ class Parser:
         expression.right = self.parse_expression(precedence)
 
         return expression
+
+    def parse_if_expression(self) -> ast.Expression | None:
+        if self.enable_defer:
+            defer(self.trace_deez.end_trace, self.trace_deez.begin_trace("parse_if_expression"))
+        expression = ast.IfExpression(self.current)
+
+        if not self.expected_peek(tokenizer.LPAREN):
+            return None
+
+        self.next_token()
+        expression.condition = self.parse_expression(Precedences.LOWEST)
+
+        if not self.expected_peek(tokenizer.RPAREN):
+            return None
+
+        if not self.expected_peek(tokenizer.LBRACE):
+            return None
+
+        expression.consequence = self.parse_block_statement()
+
+        if self.is_peek(tokenizer.ELSE):
+            self.next_token()
+            if not self.expected_peek(tokenizer.LBRACE):
+                return None
+            expression.alternative = self.parse_block_statement()
+
+        return expression
+
+    def parse_block_statement(self) -> ast.BlockStatement:
+        block = ast.BlockStatement(self.current)
+        block.statements = []
+        self.next_token()
+
+        while not self.is_current(tokenizer.RBRACE) and not self.is_current(tokenizer.EOF):
+            statement = self.parse_statement()
+            if statement is not None:
+                block.statements.append(statement)
+            self.next_token()
+
+        return block
 
     def is_current(self, token_type: tokenizer.TokenType) -> bool:
         return self.current.type == token_type

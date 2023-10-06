@@ -1,3 +1,5 @@
+# type: ignore[reportOptionalMemberAccess, reportGeneralTypeIssues]
+
 import pytest
 from pytest_check import check
 
@@ -266,6 +268,99 @@ def test_tracer_operator_precedence(input, expected):
     assert program_string == expected, f"expected={expected}, got={program_string}"
 
 
+def test_if_expression():
+    input = "if (x < y) { x };"
+
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    assert (
+        len(program.statements) == 1
+    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+
+    statement = program.statements[0]
+    assert isinstance(
+        statement, ast.ExpressionStatement
+    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+
+    expression = statement.expression
+    assert isinstance(
+        expression, ast.IfExpression
+    ), f"expression is not ast.IfExpression. got={type(expression)}"
+
+    passed, message = check_infix_expression(expression.condition, "x", "<", "y")
+    assert passed, message
+
+    assert (
+        len(expression.consequence.statements) == 1
+    ), f"concequence is not 1 statement. got={len(expression.consequence.statements)}"
+
+    consequence = expression.consequence.statements[0]
+    assert isinstance(
+        consequence, ast.ExpressionStatement
+    ), f"concequence is not ast.ExpressionStatement. got={type(consequence)}"
+
+    passed, message = check_identifier(consequence.expression, "x")
+    assert passed, message
+
+    assert (
+        expression.alternative is None
+    ), f"expression.alternative.statements was not None. got={expression.alternative}"
+
+
+def test_if_else_expression():
+    input = "if (x < y) { x } else { y };"
+
+    lex = lexer.Lexer(input)
+    pars = parser.Parser(lex)
+    program = pars.parse_program()
+    check_parse_errors(pars)
+
+    assert (
+        len(program.statements) == 1
+    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+
+    statement = program.statements[0]
+    assert isinstance(
+        statement, ast.ExpressionStatement
+    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+
+    expression = statement.expression
+    assert isinstance(
+        expression, ast.IfExpression
+    ), f"expression is not ast.IfExpression. got={type(expression)}"
+
+    passed, message = check_infix_expression(expression.condition, "x", "<", "y")
+    assert passed, message
+
+    assert (
+        len(expression.consequence.statements) == 1
+    ), f"concequence is not 1 statement. got={len(expression.consequence.statements)}"
+
+    consequence = expression.consequence.statements[0]
+    assert isinstance(
+        consequence, ast.ExpressionStatement
+    ), f"consequence is not ast.ExpressionStatement. got={type(consequence)}"
+
+    passed, message = check_identifier(consequence.expression, "x")
+    assert passed, message
+
+    assert len(expression.alternative.statements) == 1, (
+        f"expression.alternative.statements does not contain 1 statement. "
+        f"got={len(expression.alternative.statements)}"
+    )
+
+    alternative = expression.alternative.statements[0]
+    assert isinstance(
+        alternative, ast.ExpressionStatement
+    ), f"alternative is not ast.ExpressionStatement. got={type(alternative)}"
+
+    passed, message = check_identifier(alternative.expression, "y")
+    assert passed, message
+
+
 def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]:
     if statement.token_literal() != "let":
         return False, f"statement.token_literal() not 'let'. got={statement.token_literal()}"
@@ -273,17 +368,15 @@ def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]
     if not isinstance(statement, ast.LetStatement):
         return False, f"statement not 'ast.LetStatement'. got={type(statement)}"
 
-    if statement.name.value != name:  # type: ignore[reportOptionalMemberAccess]
+    if statement.name.value != name:
         return (
             False,
-            f"statement.name.value not '{name}'."
-            f"got={statement.name.value}",  # type: ignore[reportOptionalMemberAccess]
+            f"statement.name.value not '{name}'." f"got={statement.name.value}",
         )
-    if statement.name.token_literal() != name:  # type: ignore[reportOptionalMemberAccess]
+    if statement.name.token_literal() != name:
         return (
             False,
-            f"statement.name.token_literal() not '{name}'."
-            f"got={statement.name.token_literal()}",  # type: ignore[reportOptionalMemberAccess]
+            f"statement.name.token_literal() not '{name}'." f"got={statement.name.token_literal()}",
         )
 
     return True, ""
@@ -300,8 +393,8 @@ def check_parse_errors(pars: parser.Parser) -> None:
         error_messages.extend([f"parser error: {message}"])
     for i, error in enumerate(error_messages):
         if i == 0:
-            check.equal("parser has 0 errors", error_title)  # type: ignore[reportGeneralTypeIssues]
-        check.equal("no parser error", error)  # type: ignore[reportGeneralTypeIssues]
+            check.equal("parser has 0 errors", error_title)
+        check.equal("no parser error", error)
 
 
 def check_integer_literal(int_literal: ast.Expression | None, expected: int) -> tuple[bool, str]:
