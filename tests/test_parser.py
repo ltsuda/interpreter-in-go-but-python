@@ -369,17 +369,16 @@ def test_operator_precedence(input, expected):
     assert program_string == expected, f"expected={expected}, got={program_string}"
 
 
-@pytest.mark.parametrize(
-    "input,expected",
-    [
-        ("-1 * 2 + 3", "(((-1) * 2) + 3)"),
-    ],
-)
-def test_tracer_operator_precedence(input, expected):
+def test_tracer_operator_precedence():
+    input = "-1 * 2 + 3"
+    expected = "(((-1) * 2) + 3)"
     lex = lexer.Lexer(input)
     pars = parser.Parser(lex, enable_defer=True)
     program = pars.parse_program()
     check_parse_errors(pars)
+
+    print(f"\nOperator precedence for input: {input}")
+    print(f"Operator precedence expected result: {expected}")
 
     program_string = program.to_string()
     assert program_string == expected, f"expected={expected}, got={program_string}"

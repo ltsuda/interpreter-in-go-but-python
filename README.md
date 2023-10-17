@@ -2,9 +2,15 @@
 
 Inspired by ThePrimeagen's [ts-rust-zig-deez](https://github.com/ThePrimeagen/ts-rust-zig-deez) project that is based on ["Writing An Interpreter In Go"](https://interpreterbook.com/) book by Thorsten Ball
 
-Current version - **Chapter 1 - Lexing - Completed**
+Current version - **Chapter 3 - Evaluation - TODO**
 
-![repl](assets/repl.gif)
+## Chapter 1 - Lexer
+
+![lexer](assets/lexer.gif)
+
+## Chapter 2 - Parser (emulated REPL)
+
+![parser](assets/parser.gif)
 
 NOTE:
 
@@ -61,6 +67,8 @@ Installing the current project: interpreter-in-go-but-python (1.0.0)
 
 ## 👨‍💻 Usage
 
+### Lexer
+
 ```bash
 (interpreter-in-go-but-python-py3.11) ❯ python
 Python 3.11.5 (main, Sep  1 2023, 21:34:18) [GCC 11.4.0] on linux
@@ -82,16 +90,63 @@ Token(type=';', literal=';')
 Token(type='EOF', literal='')
 ```
 
+### Parser
+
+```bash
+(interpreter-in-go-but-python-py3.12) ❯ python
+Python 3.12.0 (main, Oct 16 2023, 22:29:00) [GCC 11.4.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from interpret_deez import lexer, parser
+>>> inp = "let parse_me = 1 * 2 * 3 * 4 * 5;"
+>>> lex = lexer.Lexer(inp)
+>>> pars = parser.Parser(lex)
+>>> program = pars.parse_program()
+>>> program.to_string()
+'let parse_me = ((((1 * 2) * 3) * 4) * 5);'
+```
+
 ## 🧪 Testing
 
 ```bash
-(interpreter-in-go-but-python-py3.11) ❯ poetry run pytest
-======================================================================================== test session starts =========================================================================================
-platform linux -- Python 3.11.5, pytest-7.4.0, pluggy-1.3.0
+(interpreter-in-go-but-python-py3.12) ❯ poetry run pytest
+===================================================================================== test session starts ======================================================================================
+platform linux -- Python 3.12.0, pytest-7.4.2, pluggy-1.3.0
 rootdir: /home/ltsuda/developer/interpreter-in-go-but-python
-collected 1 item
+configfile: pyproject.toml
+plugins: check-2.2.2
+collected 62 items
 
-tests/test_lexer.py .                                                                                                                                                                          [100%]
+tests/test_ast.py .                                                                                                                                                                      [  1%]
+tests/test_lexer.py .                                                                                                                                                                    [  3%]
+tests/test_parser.py ...sss......................................................                                                                                                        [100%]
 
-========================================================================================= 1 passed in 0.02s ==========================================================================================
+============================================================================================ PASSES ============================================================================================
+_______________________________________________________________________________ test_tracer_operator_precedence ________________________________________________________________________________
+------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------
+BEGIN parse_expression_statement
+        BEGIN parse_expression
+                BEGIN parse_prefix_expression
+                        BEGIN parse_expression
+                                BEGIN parse_integer_literal
+                                END parse_integer_literal
+                        END parse_expression
+                END parse_prefix_expression
+                BEGIN parse_infix_expression
+                        BEGIN parse_expression
+                                BEGIN parse_integer_literal
+                                END parse_integer_literal
+                        END parse_expression
+                END parse_infix_expression
+                BEGIN parse_infix_expression
+                        BEGIN parse_expression
+                                BEGIN parse_integer_literal
+                                END parse_integer_literal
+                        END parse_expression
+                END parse_infix_expression
+        END parse_expression
+END parse_expression_statement
+
+Operator precedence for input: -1 * 2 + 3
+Operator precedence expected result: (((-1) * 2) + 3)
+================================================================================ 59 passed, 3 skipped in 0.17s =================================================================================
 ```
