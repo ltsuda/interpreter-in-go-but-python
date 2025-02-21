@@ -32,3 +32,5 @@ repos:
       - id: ruff-format
         # only check (don't format) + show diff on all files
         args: [--check, --diff, "."]
+
+exclude: ".vscode/.*"
