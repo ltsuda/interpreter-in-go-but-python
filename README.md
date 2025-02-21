@@ -24,45 +24,41 @@ NOTE:
 
 Recommended and used tools:
 
-- [pyenv](https://github.com/pyenv/pyenv#installation)
-- [poetry](https://python-poetry.org/)
+- [mise](https://mise.jdx.dev/getting-started.html)
+- [uv](https://docs.astral.sh/uv/)
 
 ## 🚸 Setup
 
 ```bash
 ❯ git clone https://github.com/ltsuda/interpreter-in-go-but-python
-❯ poetry shell
-Spawning shell within /home/ltsuda/developer/interpreter-in-go-but-python/.venv
-❯ emulate bash -c '. /home/ltsuda/developer/interpreter-in-go-but-python/.venv/bin/activate'
+❯ uv venv
+❯ source .venv/bin/activate
+.venv ❯ uv sync
 
-(interpreter-in-go-but-python-py3.11) ❯ poetry install
-Installing dependencies from lock file
-
-Package operations: 18 installs, 1 update, 0 removals
-
-  • Installing distlib (0.3.7)
-  • Installing filelock (3.12.3)
-  • Installing platformdirs (3.10.0)
-  • Updating setuptools (66.0.0 -> 68.2.1)
-  • Installing cfgv (3.4.0)
-  • Installing click (8.1.7)
-  • Installing identify (2.5.28)
-  • Installing iniconfig (2.0.0)
-  • Installing mypy-extensions (1.0.0)
-  • Installing nodeenv (1.8.0)
-  • Installing packaging (23.1)
-  • Installing pathspec (0.11.2)
-  • Installing pluggy (1.3.0)
-  • Installing pyyaml (6.0.1)
-  • Installing virtualenv (20.24.5)
-  • Installing black (23.7.0)
-  • Installing pre-commit (3.4.0)
-  • Installing pytest (7.4.0)
-  • Installing ruff (0.0.287)
-
-Installing the current project: interpreter-in-go-but-python (1.0.0)
-
-(interpreter-in-go-but-python-py3.11) ❯
+Resolved 24 packages in 7ms
+Installed 22 packages in 42ms
+ + asttokens==2.4.1
+ + cfgv==3.4.0
+ + distlib==0.3.9
+ + executing==2.2.0
+ + filelock==3.17.0
+ + identify==2.6.7
+ + iniconfig==2.0.0
+ + littleutils==0.2.4
+ + nodeenv==1.9.1
+ + packaging==24.2
+ + platformdirs==4.3.6
+ + pluggy==1.5.0
+ + pre-commit==4.1.0
+ + pytest==8.3.4
+ + pytest-check==2.5.0
+ + python-defer==0.2.1
+ + pyyaml==6.0.2
+ + ruff==0.9.7
+ + six==1.17.0
+ + sorcery==0.2.2
+ + virtualenv==20.29.2
+ + wrapt==1.17.2
 ```
 
 ## 👨‍💻 Usage
@@ -70,14 +66,14 @@ Installing the current project: interpreter-in-go-but-python (1.0.0)
 ### Lexer
 
 ```bash
-(interpreter-in-go-but-python-py3.11) ❯ python
-Python 3.11.5 (main, Sep  1 2023, 21:34:18) [GCC 11.4.0] on linux
+.venv ❯ python
+Python 3.13.2 (main, Feb  5 2025, 19:11:32) [Clang 19.1.6 ] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from interpret_deez import lexer
 >>> input = "!-/*5[];"
 >>> lex = lexer.Lexer(input)
 >>> for _ in range(9):
-...   lex.next_token()
+...     lex.next_token()
 ...
 Token(type='!', literal='!')
 Token(type='-', literal='-')
@@ -93,8 +89,8 @@ Token(type='EOF', literal='')
 ### Parser
 
 ```bash
-(interpreter-in-go-but-python-py3.12) ❯ python
-Python 3.12.0 (main, Oct 16 2023, 22:29:00) [GCC 11.4.0] on linux
+.venv ❯ python
+Python 3.13.2 (main, Feb  5 2025, 19:11:32) [Clang 19.1.6 ] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from interpret_deez import lexer, parser
 >>> inp = "let parse_me = 1 * 2 * 3 * 4 * 5;"
@@ -108,21 +104,21 @@ Type "help", "copyright", "credits" or "license" for more information.
 ## 🧪 Testing
 
 ```bash
-(interpreter-in-go-but-python-py3.12) ❯ poetry run pytest
-===================================================================================== test session starts ======================================================================================
-platform linux -- Python 3.12.0, pytest-7.4.2, pluggy-1.3.0
-rootdir: /home/ltsuda/developer/interpreter-in-go-but-python
+.venv ❯ pytest
+================================================================================== test session starts ===================================================================================
+platform linux -- Python 3.13.2, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/mike/developer/interpreter-in-go-but-python
 configfile: pyproject.toml
-plugins: check-2.2.2
+plugins: check-2.5.0
 collected 62 items
 
-tests/test_ast.py .                                                                                                                                                                      [  1%]
-tests/test_lexer.py .                                                                                                                                                                    [  3%]
-tests/test_parser.py ...sss......................................................                                                                                                        [100%]
+tests/test_ast.py .                                                                                                                                                                [  1%]
+tests/test_lexer.py .                                                                                                                                                              [  3%]
+tests/test_parser.py ...sss......................................................                                                                                                  [100%]
 
-============================================================================================ PASSES ============================================================================================
-_______________________________________________________________________________ test_tracer_operator_precedence ________________________________________________________________________________
-------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------
+========================================================================================= PASSES =========================================================================================
+____________________________________________________________________________ test_tracer_operator_precedence _____________________________________________________________________________
+---------------------------------------------------------------------------------- Captured stdout call ----------------------------------------------------------------------------------
 BEGIN parse_expression_statement
         BEGIN parse_expression
                 BEGIN parse_prefix_expression
@@ -148,5 +144,5 @@ END parse_expression_statement
 
 Operator precedence for input: -1 * 2 + 3
 Operator precedence expected result: (((-1) * 2) + 3)
-================================================================================ 59 passed, 3 skipped in 0.17s =================================================================================
+============================================================================ 59 passed, 3 skipped in -28.89s =============================================================================
 ```
