@@ -104,7 +104,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 ## 🧪 Testing
 
 ```bash
-.venv ❯ pytest
+.venv ❯ uv run pytest
 ================================================================================== test session starts ===================================================================================
 platform linux -- Python 3.13.2, pytest-8.3.4, pluggy-1.5.0
 rootdir: /home/mike/developer/interpreter-in-go-but-python
