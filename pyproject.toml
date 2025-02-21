@@ -1,34 +1,42 @@
-[tool.poetry]
+[project]
 name = "interpreter-in-go-but-python"
 version = "1.0.0"
 description = "Writing An Interpreter In Go But In Python"
-authors = ["Leonardo Tsuda <3965277+ltsuda@users.noreply.github.com>"]
+authors = [
+    { name = "Leonardo Tsuda", email = "3965277+ltsuda@users.noreply.github.com" },
+]
 readme = "README.md"
-packages = [{ include = "interpret_deez" }]
-
-
-[tool.poetry.dependencies]
-python = "^3.11"
-
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.3"
-black = "^24.3.0"
-ruff = "^0.1.0"
-pre-commit = "^3.5.0"
-pytest-check = "^2.2.2"
-python-defer = "^0.2.1"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.black]
-line-length = 100
+requires-python = ">=3.13"
+dependencies = [
+    "pre-commit>=4.1.0",
+    "pytest>=8.3.4",
+    "pytest-check>=2.5.0",
+    "python-defer>=0.2.1",
+    "ruff>=0.9.7",
+]
 
 [tool.ruff]
 line-length = 100
-select = ["E", "F", "W", "Q", "UP", "I", "N"]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # pycodestyle warning
+    "W",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+# https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+ignore = ["W191", "E111", "E114", "E117"]
 
 [tool.pytest.ini_options]
 addopts = "-rP"
