@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import TypeAlias
 
-TokenType: TypeAlias = str
+type TokenType = str
 
 
 @dataclass

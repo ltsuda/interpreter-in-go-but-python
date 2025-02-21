@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional
 
 from interpret_deez.tokenizer import Token
 
@@ -30,15 +29,13 @@ class Node(ABC):
 @dataclass
 class Statement(Node):
     @abstractmethod
-    def statement_node(self) -> None:
-        ...
+    def statement_node(self) -> None: ...
 
 
 @dataclass
 class Expression(Node):
     @abstractmethod
-    def expression_node(self):
-        ...
+    def expression_node(self): ...
 
 
 @dataclass
@@ -46,8 +43,7 @@ class PrefixExpression(Expression):
     operator: str
     right: Expression | None = None
 
-    def expression_node(self) -> None:
-        ...
+    def expression_node(self) -> None: ...
 
     def to_string(self) -> str:
         return f"({self.operator}{self.right.to_string() if self.right else ''})"
@@ -59,8 +55,7 @@ class InfixExpression(Expression):
     operator: str
     right: Expression | None = None
 
-    def expression_node(self) -> None:
-        ...
+    def expression_node(self) -> None: ...
 
     def to_string(self) -> str:
         out = f"{self.left.to_string() if self.left else ''}"
@@ -73,8 +68,7 @@ class InfixExpression(Expression):
 class BlockStatement(Statement):
     statements: list[Statement] = field(default_factory=list)
 
-    def statement_node(self) -> None:
-        ...
+    def statement_node(self) -> None: ...
 
     def to_string(self) -> str:
         return "".join(statement.to_string() for statement in self.statements)
@@ -82,12 +76,11 @@ class BlockStatement(Statement):
 
 @dataclass
 class IfExpression(Expression):
-    condition: Optional[Expression] = None
-    consequence: Optional[BlockStatement] = None
-    alternative: Optional[BlockStatement] = None
+    condition: Expression | None = None
+    consequence: BlockStatement | None = None
+    alternative: BlockStatement | None = None
 
-    def expression_node(self) -> None:
-        ...
+    def expression_node(self) -> None: ...
 
     def to_string(self) -> str:
         out = "if"
@@ -102,11 +95,10 @@ class IfExpression(Expression):
 
 @dataclass
 class CallExpression(Expression):
-    function: Optional[Expression] = None
-    arguments: Optional[list[Expression]] = None
+    function: Expression | None = None
+    arguments: list[Expression] | None = None
 
-    def expression_node(self) -> None:
-        ...
+    def expression_node(self) -> None: ...
 
     def to_string(self) -> str:
         args = []
@@ -121,8 +113,7 @@ class CallExpression(Expression):
 class Identifier(Expression):
     value: str
 
-    def expression_node(self) -> None:
-        ...
+    def expression_node(self) -> None: ...
 
     def to_string(self) -> str:
         return self.value
@@ -132,8 +123,7 @@ class Identifier(Expression):
 class IntegerLiteral(Expression):
     value: int | None = None
 
-    def expression_node(self) -> None:
-        ...
+    def expression_node(self) -> None: ...
 
     def to_string(self) -> str:
         return self.token.literal
@@ -142,10 +132,9 @@ class IntegerLiteral(Expression):
 @dataclass
 class FunctionLiteral(Expression):
     parameters: list[Identifier] | None = field(default_factory=list)  # noqa: F811
-    body: Optional[BlockStatement] = None
+    body: BlockStatement | None = None
 
-    def expression_node(self) -> None:
-        ...
+    def expression_node(self) -> None: ...
 
     def to_string(self) -> str:
         params = "".join(parameter.to_string() for parameter in self.parameters)  # type: ignore
@@ -161,8 +150,7 @@ class FunctionLiteral(Expression):
 class Boolean(Expression):
     value: bool | None = None
 
-    def expression_node(self) -> None:
-        ...
+    def expression_node(self) -> None: ...
 
     def to_string(self) -> str:
         return self.token.literal
@@ -170,11 +158,10 @@ class Boolean(Expression):
 
 @dataclass
 class LetStatement(Statement):
-    name: Optional[Identifier] = None
-    value: Optional[Expression] = None
+    name: Identifier | None = None
+    value: Expression | None = None
 
-    def statement_node(self) -> str:
-        ...
+    def statement_node(self) -> str: ...
 
     def to_string(self) -> str:
         out = f"{self.token_literal()} {self.name.to_string() if self.name else ''} ="
@@ -189,10 +176,9 @@ class LetStatement(Statement):
 
 @dataclass
 class ReturnStatement(Statement):
-    return_value: Optional[Expression] = None
+    return_value: Expression | None = None
 
-    def statement_node(self) -> str:
-        ...
+    def statement_node(self) -> str: ...
 
     def to_string(self) -> str:
         out = f"{self.token_literal()}"
@@ -207,10 +193,9 @@ class ReturnStatement(Statement):
 
 @dataclass
 class ExpressionStatement(Statement):
-    expression: Optional[Expression] = None
+    expression: Expression | None = None
 
-    def statement_node(self) -> str:
-        ...
+    def statement_node(self) -> str: ...
 
     def to_string(self) -> str:
         if self.expression is not None:

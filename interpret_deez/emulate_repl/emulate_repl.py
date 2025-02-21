@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     for i, input in enumerate(inputs):
         out, errors = emulate_parser(input)
-        print(f"<--------------- Parsing input {i+1}: --------------->")
+        print(f"<--------------- Parsing input {i + 1}: --------------->")
         if errors:
             print(errors)
         else:

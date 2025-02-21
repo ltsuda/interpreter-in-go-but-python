@@ -12,6 +12,6 @@ def test_ast_to_string():
 
     program = ast.Program([let_statement])
 
-    assert (
-        program.to_string() == "let myVar = anotherVar;"
-    ), f"program.to_string() wrong. got={program.to_string()}"
+    assert program.to_string() == "let myVar = anotherVar;", (
+        f"program.to_string() wrong. got={program.to_string()}"
+    )

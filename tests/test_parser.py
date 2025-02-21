@@ -20,9 +20,9 @@ def test_let_statements(input, expected_ident, expected_value):
     program = pars.parse_program()
     statements = program.statements
 
-    assert (
-        len(statements) == 1
-    ), f"program.statements does not contain 1 statement. got={len(statements)}"
+    assert len(statements) == 1, (
+        f"program.statements does not contain 1 statement. got={len(statements)}"
+    )
 
     statement: ast.LetStatement = program.statements[0]
     has_passed, error_message = check_let_statement(statement, expected_ident)
@@ -64,14 +64,14 @@ def test_return_statements(input, expected_value):
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    )
 
     statement = program.statements[0]
-    assert isinstance(
-        statement, ast.ReturnStatement
-    ), f"statement not 'ast.ReturnStatement'. got={type(statement)}"
+    assert isinstance(statement, ast.ReturnStatement), (
+        f"statement not 'ast.ReturnStatement'. got={type(statement)}"
+    )
     assert (
         statement.token_literal()
         != f"return_statement.token_literal() not 'return', got={statement.token_literal()}"
@@ -88,14 +88,14 @@ def test_identifier_expression():
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements has not enough statements. got={len(program.statements)}"
+    )
     statement = program.statements[0]
 
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    )
 
     passed, message = check_literal_expression(statement.expression, "foobar")
     assert passed, message
@@ -109,14 +109,14 @@ def test_integer_literal_expression():
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements has not enough statements. got={len(program.statements)}"
+    )
     statement = program.statements[0]
 
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    )
 
     passed, message = check_literal_expression(statement.expression, 100)
     assert passed, message
@@ -130,23 +130,23 @@ def test_function_literal_expression():
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements has not enough statements. got={len(program.statements)}"
+    )
     statement = program.statements[0]
 
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    )
 
     fn_expression = statement.expression
-    assert isinstance(
-        fn_expression, ast.FunctionLiteral
-    ), f"fn_expression is not ast.FunctionLiteral. got={type(fn_expression)}"
+    assert isinstance(fn_expression, ast.FunctionLiteral), (
+        f"fn_expression is not ast.FunctionLiteral. got={type(fn_expression)}"
+    )
 
-    assert (
-        len(fn_expression.parameters) == 2
-    ), f"function literal parameters are wrong. want 2, got={len(fn_expression.parameters)}"
+    assert len(fn_expression.parameters) == 2, (
+        f"function literal parameters are wrong. want 2, got={len(fn_expression.parameters)}"
+    )
 
     passed, message = check_literal_expression(fn_expression.parameters[0], "x")
     assert passed, message
@@ -158,9 +158,9 @@ def test_function_literal_expression():
         f"got={len(fn_expression.body.statements)}"
     )
     body_statement = fn_expression.body.statements[0]
-    assert isinstance(
-        body_statement, ast.ExpressionStatement
-    ), f"function body statement is not ast.ExpressionStatement. got={type(body_statement)}"
+    assert isinstance(body_statement, ast.ExpressionStatement), (
+        f"function body statement is not ast.ExpressionStatement. got={type(body_statement)}"
+    )
     passed, message = check_infix_expression(body_statement.expression, "x", "+", "y")
     assert passed, message
 
@@ -182,9 +182,9 @@ def test_function_parameters_expression(input, expected_params):
     statement: ast.ExpressionStatement = program.statements[0]
     fn: ast.FunctionLiteral = statement.expression
 
-    assert len(fn.parameters) == len(
-        expected_params
-    ), f"length parameters wrong. want {len(expected_params)}, got={len(fn.parameters)}"
+    assert len(fn.parameters) == len(expected_params), (
+        f"length parameters wrong. want {len(expected_params)}, got={len(fn.parameters)}"
+    )
 
     for i, ident in enumerate(expected_params):
         passed, message = check_literal_expression(fn.parameters[i], ident)
@@ -199,26 +199,26 @@ def test_call_expression():
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements has not enough statements. got={len(program.statements)}"
+    )
 
     statement = program.statements[0]
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    )
 
     expression: ast.CallExpression = statement.expression
-    assert isinstance(
-        expression, ast.CallExpression
-    ), f"expression is not ast.CallExpression. got={type(expression)}"
+    assert isinstance(expression, ast.CallExpression), (
+        f"expression is not ast.CallExpression. got={type(expression)}"
+    )
 
     passed, message = check_identifier(expression.function, "add")
     assert passed, message
 
-    assert (
-        len(expression.arguments) == 3
-    ), f"wrong length of arguments. got={len(expression.arguments)}"
+    assert len(expression.arguments) == 3, (
+        f"wrong length of arguments. got={len(expression.arguments)}"
+    )
 
     passed, message = check_literal_expression(expression.arguments[0], 1)
     assert passed, message
@@ -241,14 +241,14 @@ def test_boolean_expression(input, expected):
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements has not enough statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements has not enough statements. got={len(program.statements)}"
+    )
     statement = program.statements[0]
 
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    )
 
     passed, message = check_literal_expression(statement.expression, expected)
     assert passed, message
@@ -269,23 +269,23 @@ def test_prefix_expressions(input, operator, int_value):
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    )
 
     statement = program.statements[0]
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={statement}"
+    )
 
     prefix_expression = statement.expression
-    assert isinstance(
-        prefix_expression, ast.PrefixExpression
-    ), f"expression not ast.PrefixExpression. got={prefix_expression}"
+    assert isinstance(prefix_expression, ast.PrefixExpression), (
+        f"expression not ast.PrefixExpression. got={prefix_expression}"
+    )
 
-    assert (
-        prefix_expression.operator == operator
-    ), f"prefix_expression.operator is not {operator}. got={prefix_expression.operator}"
+    assert prefix_expression.operator == operator, (
+        f"prefix_expression.operator is not {operator}. got={prefix_expression.operator}"
+    )
 
     passed, message = check_literal_expression(prefix_expression.right, int_value)
     assert passed, message
@@ -313,14 +313,14 @@ def test_infix_expressions(input, left, operator, right):
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    )
 
     statement = program.statements[0]
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    )
 
     infix_expression = statement.expression
     passed, message = check_infix_expression(infix_expression, left, operator, right)
@@ -392,38 +392,38 @@ def test_if_expression():
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    )
 
     statement = program.statements[0]
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    )
 
     expression = statement.expression
-    assert isinstance(
-        expression, ast.IfExpression
-    ), f"expression is not ast.IfExpression. got={type(expression)}"
+    assert isinstance(expression, ast.IfExpression), (
+        f"expression is not ast.IfExpression. got={type(expression)}"
+    )
 
     passed, message = check_infix_expression(expression.condition, "x", "<", "y")
     assert passed, message
 
-    assert (
-        len(expression.consequence.statements) == 1
-    ), f"consequence is not 1 statement. got={len(expression.consequence.statements)}"
+    assert len(expression.consequence.statements) == 1, (
+        f"consequence is not 1 statement. got={len(expression.consequence.statements)}"
+    )
 
     consequence = expression.consequence.statements[0]
-    assert isinstance(
-        consequence, ast.ExpressionStatement
-    ), f"consequence is not ast.ExpressionStatement. got={type(consequence)}"
+    assert isinstance(consequence, ast.ExpressionStatement), (
+        f"consequence is not ast.ExpressionStatement. got={type(consequence)}"
+    )
 
     passed, message = check_identifier(consequence.expression, "x")
     assert passed, message
 
-    assert (
-        expression.alternative is None
-    ), f"expression.alternative.statements was not None. got={expression.alternative}"
+    assert expression.alternative is None, (
+        f"expression.alternative.statements was not None. got={expression.alternative}"
+    )
 
 
 def test_if_else_expression():
@@ -434,31 +434,31 @@ def test_if_else_expression():
     program = pars.parse_program()
     check_parse_errors(pars)
 
-    assert (
-        len(program.statements) == 1
-    ), f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    assert len(program.statements) == 1, (
+        f"program.statements does not contain 1 statements. got={len(program.statements)}"
+    )
 
     statement = program.statements[0]
-    assert isinstance(
-        statement, ast.ExpressionStatement
-    ), f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    assert isinstance(statement, ast.ExpressionStatement), (
+        f"program.statement[0] is not ast.ExpressionStatement. got={type(statement)}"
+    )
 
     expression = statement.expression
-    assert isinstance(
-        expression, ast.IfExpression
-    ), f"expression is not ast.IfExpression. got={type(expression)}"
+    assert isinstance(expression, ast.IfExpression), (
+        f"expression is not ast.IfExpression. got={type(expression)}"
+    )
 
     passed, message = check_infix_expression(expression.condition, "x", "<", "y")
     assert passed, message
 
-    assert (
-        len(expression.consequence.statements) == 1
-    ), f"concequence is not 1 statement. got={len(expression.consequence.statements)}"
+    assert len(expression.consequence.statements) == 1, (
+        f"concequence is not 1 statement. got={len(expression.consequence.statements)}"
+    )
 
     consequence = expression.consequence.statements[0]
-    assert isinstance(
-        consequence, ast.ExpressionStatement
-    ), f"consequence is not ast.ExpressionStatement. got={type(consequence)}"
+    assert isinstance(consequence, ast.ExpressionStatement), (
+        f"consequence is not ast.ExpressionStatement. got={type(consequence)}"
+    )
 
     passed, message = check_identifier(consequence.expression, "x")
     assert passed, message
@@ -469,9 +469,9 @@ def test_if_else_expression():
     )
 
     alternative = expression.alternative.statements[0]
-    assert isinstance(
-        alternative, ast.ExpressionStatement
-    ), f"alternative is not ast.ExpressionStatement. got={type(alternative)}"
+    assert isinstance(alternative, ast.ExpressionStatement), (
+        f"alternative is not ast.ExpressionStatement. got={type(alternative)}"
+    )
 
     passed, message = check_identifier(alternative.expression, "y")
     assert passed, message
@@ -487,12 +487,12 @@ def check_let_statement(statement: ast.Statement, name: str) -> tuple[bool, str]
     if statement.name.value != name:
         return (
             False,
-            f"statement.name.value not '{name}'." f"got={statement.name.value}",
+            f"statement.name.value not '{name}'.got={statement.name.value}",
         )
     if statement.name.token_literal() != name:
         return (
             False,
-            f"statement.name.token_literal() not '{name}'." f"got={statement.name.token_literal()}",
+            f"statement.name.token_literal() not '{name}'.got={statement.name.token_literal()}",
         )
 
     return True, ""

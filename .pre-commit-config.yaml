@@ -26,6 +26,9 @@ repos:
     hooks:
       # Run the linter.
       - id: ruff
-        args: [ --fix ]
+        # all files
+        args: ["."]
       # Run the formatter.
       - id: ruff-format
+        # only check (don't format) + show diff on all files
+        args: [--check, --diff, "."]

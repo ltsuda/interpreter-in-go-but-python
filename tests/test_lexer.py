@@ -108,10 +108,10 @@ def test_next_token():
     for i, tt in enumerate(expected):
         next_token = lexer.next_token()
 
-        assert (
-            next_token.type == tt.type
-        ), f"expected[{i}] - token type is wrong. expected: {tt.type}, got: {next_token.type}"
+        assert next_token.type == tt.type, (
+            f"expected[{i}] - token type is wrong. expected: {tt.type}, got: {next_token.type}"
+        )
 
-        assert (
-            next_token.literal == tt.literal
-        ), f"expected[{i}] - literal is wrong. expected: {tt.literal}, got: {next_token.literal}"
+        assert next_token.literal == tt.literal, (
+            f"expected[{i}] - literal is wrong. expected: {tt.literal}, got: {next_token.literal}"
+        )
