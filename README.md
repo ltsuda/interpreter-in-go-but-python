@@ -20,7 +20,7 @@ NOTE:
 
 ## 🛠️ Requirements
 
-**interpret_deez** was tested Python 3.11.
+**interpret_deez** was tested Python 3.11 and 3.13.
 
 Recommended and used tools:
 
